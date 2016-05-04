@@ -15,6 +15,7 @@ public:
 	}
 
 	void initMemory() {
+		/*
 		memory[0] = 0x3E;
 		memory[1] = 0x01;
 		memory[2] = 0xC3;
@@ -27,13 +28,20 @@ public:
 		memory[0x2209] = 0xC3;
 		memory[0x220A] = 0x05;
 		memory[0x220B] = 0x22;
-
+*/
+		memory[0] = 0x3E;
+		memory[1] = 0x02;
+		memory[2] = 0xC6;
+		memory[3] = 0x03;
+		memory[4] = 0x06;
+		memory[5] = 0x03;
+		memory[6] = 0x80;
 
 	}
 
 private:
 
-	sc_bv<16> memory[65535];
+	sc_bv<8> memory[65536];			// 16 bit address
 	unsigned int addressToRead;
 
 	void readData() {
