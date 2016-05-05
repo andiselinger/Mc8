@@ -692,14 +692,14 @@ private:
 						std::cout << "EXECUTE ADD A ... [START] " << std::endl;
 						// Load A to alu1
 						alu1 = a;
-						std::cout << "Load " << alu1.to_uint() << " to alu1"
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
 								<< std::endl;
 						execCount++;
 						break;
 					case 1:
 						// Load A to alu2
 						alu2 = a;
-						std::cout << "Load " << alu2.to_uint() << " to alu2"
+						std::cout << "Load A = " << alu2.to_uint() << " to alu2"
 								<< std::endl;
 						execCount++;
 						break;
@@ -716,6 +716,9 @@ private:
 						flag_s = tempFlags[3];
 						a = aluRes;
 						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
 						std::cout << "EXECUTE ADD A ... [END] " << std::endl;
 						execCount = 0;
 						state = FETCH_INSTR;
@@ -756,6 +759,9 @@ private:
 						flag_s = tempFlags[3];
 						a = aluRes;
 						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
 						std::cout << "EXECUTE ADD B ... [END] " << std::endl;
 						execCount = 0;
 						state = FETCH_INSTR;
@@ -779,8 +785,8 @@ private:
 					case 1:
 						// Load C to alu2
 						alu2 = c;
-						std::cout << "Load C =  " << alu2.to_uint() << " to alu2"
-								<< std::endl;
+						std::cout << "Load C =  " << alu2.to_uint()
+								<< " to alu2" << std::endl;
 						execCount++;
 						break;
 					case 2:
@@ -796,6 +802,9 @@ private:
 						flag_s = tempFlags[3];
 						a = aluRes;
 						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
 						std::cout << "EXECUTE ADD C ... [END] " << std::endl;
 						execCount = 0;
 						state = FETCH_INSTR;
@@ -855,6 +864,9 @@ private:
 						iorq.write(true);
 						pc = pc.to_uint() + 1;
 						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
 						std::cout << "EXECUTE ADD dat_8 ... [END] "
 								<< std::endl;
 						execCount = 0;
@@ -864,6 +876,860 @@ private:
 						break;
 					}
 					break; // ADD dat_8
+
+				case 0x97:
+					// SUB A
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE SUB A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load A to alu2
+						alu2 = a;
+						std::cout << "Load A = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = sub(alu1, alu2);
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = tempFlags[0];
+						flag_z = tempFlags[1];
+						flag_pv = tempFlags[2];
+						flag_s = tempFlags[3];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE SUB A ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // SUB A
+
+				case 0x90:
+					// SUB B
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE SUB A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load B to alu2
+						alu2 = b;
+						std::cout << "Load B = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = sub(alu1, alu2);
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = tempFlags[0];
+						flag_z = tempFlags[1];
+						flag_pv = tempFlags[2];
+						flag_s = tempFlags[3];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE SUB B ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // SUB B
+
+				case 0x91:
+					// SUB C
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE SUB C ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load C to alu2
+						alu2 = c;
+						std::cout << "Load B = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = sub(alu1, alu2);
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = tempFlags[0];
+						flag_z = tempFlags[1];
+						flag_pv = tempFlags[2];
+						flag_s = tempFlags[3];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE SUB C ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // SUB C
+
+				case 0xD6:
+					// SUB dat_8
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE SUB dat_8 ... [START] "
+								<< std::endl;
+						// Read dat8 from Mem, set address
+						addressBus.write(pc);
+						execCount++;
+						break;
+					case 1:
+						// Load A to ALU
+						alu1 = a;
+						std::cout << "Load A = " << a.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Set control sigs for mem read
+						wr.write(true);
+						rd.write(false);
+						mreq.write(false);
+						iorq.write(true);
+						execCount++;
+						break;
+					case 3:
+						// Read dat_8 to ALU
+						alu2 = dataBus.read();
+						std::cout << "Read dat_8 to ALU " << dataBus.read()
+								<< std::endl;
+						execCount++;
+						break;
+					case 4:
+						// Execute Computation
+						aluRes = sub(alu1, alu2);
+						execCount++;
+						break;
+					case 5:
+						// set flags, store result and reset control signals
+						flag_c = tempFlags[0];
+						flag_z = tempFlags[1];
+						flag_pv = tempFlags[2];
+						flag_s = tempFlags[3];
+						a = aluRes;			// Store result
+						wr.write(true);
+						rd.write(true);
+						mreq.write(true);
+						iorq.write(true);
+						pc = pc.to_uint() + 1;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE SUB dat_8 ... [END] "
+								<< std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // SUB dat_8
+
+					// LOGICAL OPERATIONS
+				case 0xA7:
+					// AND A
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE AND A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load A to alu2
+						alu2 = a;
+						std::cout << "Load A = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 & alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE AND A ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // AND A
+
+				case 0xA0:
+					// AND B
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE AND B ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load B to alu2
+						alu2 = b;
+						std::cout << "Load B = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 & alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE AND B ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // AND B
+
+				case 0xA1:
+					// AND C
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE AND C ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load B to alu2
+						alu2 = c;
+						std::cout << "Load C = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 & alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE AND C ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // AND C
+
+				case 0xE6:
+					// AND dat_8
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE AND dat_8 ... [START] "
+								<< std::endl;
+						// Read dat8 from Mem, set address
+						addressBus.write(pc);
+						execCount++;
+						break;
+					case 1:
+						// Load A to ALU
+						alu1 = a;
+						std::cout << "Load A = " << a.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Set control sigs for mem read
+						wr.write(true);
+						rd.write(false);
+						mreq.write(false);
+						iorq.write(true);
+						execCount++;
+						break;
+					case 3:
+						// Read dat_8 to ALU
+						alu2 = dataBus.read();
+						std::cout << "Read dat_8 to ALU " << dataBus.read()
+								<< std::endl;
+						execCount++;
+						break;
+					case 4:
+						// Execute Computation
+						aluRes = alu1 & alu2;
+						execCount++;
+						break;
+					case 5:
+						// set flags, store result and reset control signals
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;			// Store result
+						wr.write(true);
+						rd.write(true);
+						mreq.write(true);
+						iorq.write(true);
+						pc = pc.to_uint() + 1;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE AND dat_8 ... [END] "
+								<< std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // AND dat_8
+
+				case 0xB7:
+					// OR A
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE OR A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load A to alu2
+						alu2 = a;
+						std::cout << "Load A = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 | alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE OR A ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // OR A
+
+				case 0xB0:
+					// OR B
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE OR A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load B to alu2
+						alu2 = b;
+						std::cout << "Load B = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 | alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE OR B ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // OR B
+
+				case 0xB1:
+					// OR C
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE OR A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load C to alu2
+						alu2 = c;
+						std::cout << "Load C = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 | alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE OR B ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // OR C
+
+				case 0xF6:
+					// OR dat_8
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE OR dat_8 ... [START] "
+								<< std::endl;
+						// Read dat8 from Mem, set address
+						addressBus.write(pc);
+						execCount++;
+						break;
+					case 1:
+						// Load A to ALU
+						alu1 = a;
+						std::cout << "Load A = " << a.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Set control sigs for mem read
+						wr.write(true);
+						rd.write(false);
+						mreq.write(false);
+						iorq.write(true);
+						execCount++;
+						break;
+					case 3:
+						// Read dat_8 to ALU
+						alu2 = dataBus.read();
+						std::cout << "Read dat_8 to ALU " << dataBus.read()
+								<< std::endl;
+						execCount++;
+						break;
+					case 4:
+						// Execute Computation
+						aluRes = alu1 | alu2;
+						execCount++;
+						break;
+					case 5:
+						// set flags, store result and reset control signals
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;			// Store result
+						wr.write(true);
+						rd.write(true);
+						mreq.write(true);
+						iorq.write(true);
+						pc = pc.to_uint() + 1;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE OR dat_8 ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // OR dat_8
+
+				case 0xAF:
+					// XOR A
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE XOR A ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load A to alu2
+						alu2 = a;
+						std::cout << "Load A = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 ^ alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE XOR A ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // XOR A
+
+				case 0xA8:
+					// XOR B
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE XOR B ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load B to alu2
+						alu2 = b;
+						std::cout << "Load B = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 ^ alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE XOR B ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // XOR B
+
+				case 0xA9:
+					// XOR C
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE XOR C ... [START] " << std::endl;
+						// Load A to alu1
+						alu1 = a;
+						std::cout << "Load A = " << alu1.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 1:
+						// Load C to alu2
+						alu2 = c;
+						std::cout << "Load C = " << alu2.to_uint() << " to alu2"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Execute Computation
+						aluRes = alu1 ^ alu2;
+						execCount++;
+						break;
+					case 3:
+						// Set flags and store result
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE XOR C ... [END] " << std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // XOR C
+
+				case 0xEE:
+					// XOR dat_8
+					switch (execCount) {
+					case 0:
+						std::cout << "EXECUTE XOR dat_8 ... [START] "
+								<< std::endl;
+						// Read dat8 from Mem, set address
+						addressBus.write(pc);
+						execCount++;
+						break;
+					case 1:
+						// Load A to ALU
+						alu1 = a;
+						std::cout << "Load A = " << a.to_uint() << " to alu1"
+								<< std::endl;
+						execCount++;
+						break;
+					case 2:
+						// Set control sigs for mem read
+						wr.write(true);
+						rd.write(false);
+						mreq.write(false);
+						iorq.write(true);
+						execCount++;
+						break;
+					case 3:
+						// Read dat_8 to ALU
+						alu2 = dataBus.read();
+						std::cout << "Read dat_8 to ALU " << dataBus.read()
+								<< std::endl;
+						execCount++;
+						break;
+					case 4:
+						// Execute Computation
+						aluRes = alu1 ^ alu2;
+						execCount++;
+						break;
+					case 5:
+						// set flags, store result and reset control signals
+						flag_c = 0;
+						flag_z = aluRes.to_uint() == 0;
+						flag_pv = parity(aluRes);
+						flag_s = aluRes[7];
+						a = aluRes;			// Store result
+						wr.write(true);
+						rd.write(true);
+						mreq.write(true);
+						iorq.write(true);
+						pc = pc.to_uint() + 1;
+						std::cout << "New Value in A: " << a << std::endl;
+						std::cout << "FLAGS: c = " << flag_c << " z = "
+								<< flag_z << " pv = " << flag_pv << " s = "
+								<< flag_s << std::endl;
+						std::cout << "EXECUTE XOR dat_8 ... [END] "
+								<< std::endl;
+						execCount = 0;
+						state = FETCH_INSTR;
+						break;
+					default:
+						break;
+					}
+					break; // XOR dat_8
+
+				case 0x27:
+					if (twoByteInstrB1 == 0xCB) {
+						// Shift Left
+						switch (execCount) {
+						case 0:
+							std::cout << "EXECUTE SHL ... [START] "
+									<< std::endl;
+							// Load A to alu1
+							alu1 = a;
+							std::cout << "Load A = " << alu1.to_uint()
+									<< " to alu1" << std::endl;
+							execCount++;
+							break;
+						case 1:
+							// Perform Shift
+							tempFlags[0] = alu1[7];	// Bit 7 is stored in temp carry flag
+							aluRes = alu1 << 1;				// Shift Bits
+							execCount++;
+							break;
+						case 2:
+							// Set flags
+							flag_c = tempFlags[0];
+							flag_z = aluRes.to_uint() == 0;
+							flag_pv = parity(aluRes);
+							flag_s = aluRes[7];
+							execCount++;
+							break;
+						case 3:
+							// Set result
+							a = aluRes;
+							std::cout << "New Value in A: " << a << std::endl;
+							std::cout << "FLAGS: c = " << flag_c << " z = "
+									<< flag_z << " pv = " << flag_pv << " s = "
+									<< flag_s << std::endl;
+							std::cout << "EXECUTE SHL ... [END] " << std::endl;
+							execCount = 0;
+							twoByteInstrB1 = 0;
+							state = FETCH_INSTR;
+							break;
+						}
+					}
+					break;  // Shift Left
+
+				case 0x3F:
+					if (twoByteInstrB1 == 0xCB) {
+						// Shift Right
+						switch (execCount) {
+						case 0:
+							std::cout << "EXECUTE SHR ... [START] "
+									<< std::endl;
+							// Load A to alu1
+							alu1 = a;
+							std::cout << "Load A = " << alu1.to_uint()
+									<< " to alu1" << std::endl;
+							execCount++;
+							break;
+						case 1:
+							// Perform Shift
+							tempFlags[0] = alu1[0];	// Bit 0 is stored in temp carry flag
+							aluRes = alu1 >> 1;				// Shift Bits
+							execCount++;
+							break;
+						case 2:
+							// Set flags
+							flag_c = tempFlags[0];
+							flag_z = aluRes.to_uint() == 0;
+							flag_pv = parity(aluRes);
+							flag_s = aluRes[7];
+							execCount++;
+							break;
+						case 3:
+							// Set result
+							a = aluRes;
+							std::cout << "New Value in A: " << a << std::endl;
+							std::cout << "FLAGS: c = " << flag_c << " z = "
+									<< flag_z << " pv = " << flag_pv << " s = "
+									<< flag_s << std::endl;
+							std::cout << "EXECUTE SHR ... [END] " << std::endl;
+							execCount = 0;
+							twoByteInstrB1 = 0;
+							state = FETCH_INSTR;
+							break;
+						}
+					}
+					break;  // Shift Right
 
 				case 0xC2:
 					// JPNZ label
@@ -978,7 +1844,7 @@ private:
 		}
 
 	}
-
+	// Addition of two bitvectors
 	sc_bv<8> add(sc_bv<8> a, sc_bv<8> b) {
 		sc_bv<8> sum;
 		sc_bv<8> carry;
@@ -990,7 +1856,7 @@ private:
 			carry[i] = (a[i] && b[i] && carry[i - 1]) || (a[i] && b[i])
 					|| (a[i] && carry[i - 1]) || (b[i] && carry[i - 1]);
 		}
-		tempFlags[0] = carry[7];					// crry flag
+		tempFlags[0] = carry[7];					// carry flag
 		tempFlags[1] = sum.to_uint() == 0;			// zero flag
 		tempFlags[2] = (carry[6] ^ carry[7]) == 1;// overflow flag; Bauer, Kap. 2.5: "Ein Overflow tritt auf, wenn
 												  // ein Übertrag in den letzten Volladdierer hinein - oder aus
@@ -998,6 +1864,28 @@ private:
 												  // 'durch ihn durch' geschoben wird."
 		tempFlags[3] = sum[7];						// sign flag
 		return sum;
+	}
+
+	// Two's complement of bitvector (needed for substraction)
+	sc_bv<8> twoComp(sc_bv<8> a) {
+		for (int i = 0; i < 8; ++i)
+			a[i] = !a[i];
+		sc_bv<8> one = 1;
+		return add(a, one);
+	}
+
+	// Difference of two bitvectors
+	sc_bv<8> sub(sc_bv<8> a, sc_bv<8> b) {
+		sc_bv<8> result = add(a, twoComp(b));
+		tempFlags[0] = !tempFlags[0];// Carry flag is inverted for substraction (see online MC8 simulator)
+		return result;
+	}
+
+	bool parity(sc_bv<8> a) {
+		bool result = true;		// Parity is true for even number of bits in a
+		for (int i = 0; i < 8; ++i)
+			result ^= a[i];
+		return result;
 	}
 
 	void traceIt() {
@@ -1125,48 +2013,58 @@ private:
 
 			// Inkrement und Dekrement
 		case 0x3C:
+			// INC A
 			std::cout << "Instruction -- INC A" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x4:
+			// INC B
 			std::cout << "Instruction -- INC B" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0xC:
+			// INC C
 			std::cout << "Instruction -- INC C" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x23:
 			if (twoByteInstrB1 == 0xDD) {
+				// INC IX
 				std::cout << "Instruction -- INC IX" << std::endl;
 			} else {
+				// INC HL
 				std::cout << "Instruction -- INC HL" << std::endl;
 				twoByteInstrB1 = 0;
 			}
 			state = EXECUTE;
 			break;
 		case 0x3D:
+			// DEC A
 			std::cout << "Instruction -- DEC A" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x5:
+			// DEC B
 			std::cout << "Instruction -- DEC B" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0xD:
+			// DEC C
 			std::cout << "Instruction -- DEC C" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x2B:
 			if (twoByteInstrB1 == 0xDD) {
+				// DEC IX
 				std::cout << "Instruction -- DEC IX" << std::endl;
 			} else {
+				// DEC HL
 				std::cout << "Instruction -- DEC HL" << std::endl;
 				twoByteInstrB1 = 0;
 			}
@@ -1174,44 +2072,140 @@ private:
 			break;
 			// Arithmetic Operations
 		case 0x87:
+			// ADD A
 			std::cout << "Instruction -- ADD A" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x80:
+			// ADD B
 			std::cout << "Instruction -- ADD B" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x81:
+			// ADD C
 			std::cout << "Instruction -- ADD C" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0xC6:
+			// ADD dat_8
 			std::cout << "Instruction -- ADD dat_8" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x97:
+			// SUB A
 			std::cout << "Instruction -- SUB A" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x90:
+			// SUB B
 			std::cout << "Instruction -- SUB B" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0x91:
+			// SUB C
 			std::cout << "Instruction -- SUB C" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
 			break;
 		case 0xD6:
+			// SUB dat_8
 			std::cout << "Instruction -- SUB dat_8" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
+			break;
+
+			// Logic Operations
+		case 0xA7:
+			// AND A
+			std::cout << "Instruction -- AND A" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xA0:
+			// AND B
+			std::cout << "Instruction -- AND B" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xA1:
+			// AND C
+			std::cout << "Instruction -- AND C" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xE6:
+			// AND dat_8
+			std::cout << "Instruction -- AND dat_8" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xB7:
+			// OR A
+			std::cout << "Instruction -- OR A" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xB0:
+			// OR B
+			std::cout << "Instruction -- OR B" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xB1:
+			// OR C
+			std::cout << "Instruction -- OR C" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xF6:
+			// OR dat_8
+			std::cout << "Instruction -- OR dat_8" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xAF:
+			// XOR A
+			std::cout << "Instruction -- XOR A" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xA8:
+			// XOR B
+			std::cout << "Instruction -- XOR B" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xA9:
+			// XOR C
+			std::cout << "Instruction -- XOR C" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0xEE:
+			// XOR dat_8
+			std::cout << "Instruction -- XOR dat_8" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+		case 0x27:
+			if (twoByteInstrB1 == 0xCB) {
+				// Shift Left
+				std::cout << "Instruction -- SHL" << std::endl;
+				state = EXECUTE;
+			}
+			break;
+		case 0x3F:
+			if (twoByteInstrB1 == 0xCB) {
+				// Shift Right
+				std::cout << "Instruction -- SHR" << std::endl;
+				state = EXECUTE;
+			}
 			break;
 
 			// Bedingter Sprung
@@ -1281,8 +2275,9 @@ private:
 
 			// 2 byte Befehle
 		case 0xDD:
+		case 0xCB:
 			std::cout << "2 Byte Instruction" << std::endl;
-			twoByteInstrB1 = i.to_uint();
+			twoByteInstrB1 = i.to_uint();// i.to_uint() = 0xDD or i.to_uint() = 0xCB
 			state = FETCH_INSTR;
 			break;
 

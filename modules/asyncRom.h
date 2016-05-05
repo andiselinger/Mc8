@@ -30,12 +30,12 @@ public:
 		memory[0x220B] = 0x22;
 */
 		memory[0] = 0x3E;
-		memory[1] = 0x02;
-		memory[2] = 0xC6;
-		memory[3] = 0x03;
-		memory[4] = 0x06;
-		memory[5] = 0x03;
-		memory[6] = 0x80;
+		memory[1] = 0x42;
+		memory[2] = 0xCB;
+		memory[3] = 0x3F;
+		//memory[4] = 0xA8;
+		//memory[5] = 0x03;
+		//memory[6] = 0x80;
 
 	}
 
