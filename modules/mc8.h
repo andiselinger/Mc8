@@ -393,6 +393,141 @@ private:
 					state = FETCH_INSTR;
 					break;
 
+				case 0x21:
+					if (twoByteInstrB1 == 0xDD) {
+						// MOV IX, dat_16
+						switch (execCount) {
+						case 0:  // Write PC to address bus
+							std::cout << "EXECUTE  MOV IX, dat_16 ... [START]"
+									<< std::endl;
+							addressBus.write(pc);
+							execCount++;
+							break;
+						case 1:
+							// Set control sigs for mem read
+							wr.write(true);
+							rd.write(false);
+							mreq.write(false);
+							iorq.write(true);
+							execCount++;
+							break;
+						case 2:
+							// Write low byte to IX
+							ix = (ix & 0xff00) | (0x00FF & dataBus.read());
+							std::cout << "Got low byte " << dataBus.read()
+									<< std::endl;
+							execCount++;
+							break;
+						case 3:
+							// Reset control signals and pc++
+							wr.write(true);
+							rd.write(true);
+							mreq.write(true);
+							iorq.write(true);
+							pc = pc.to_uint() + 1;
+							execCount++;
+							break;
+						case 4:
+							// Write PC to address bus
+							std::cout << "Will fetch label hi byte at address "
+									<< pc.to_uint() << std::endl;
+							addressBus.write(pc);
+							execCount++;
+							break;
+						case 5:  // Set signals for second read
+							wr.write(true);
+							rd.write(false);
+							mreq.write(false);
+							iorq.write(true);
+							execCount++;
+							break;
+						case 6:  // Write hi byte to IX
+							ix = (dataBus.read() << 8) | (ix & 0x00FF);
+							std::cout << "Got hi byte " << dataBus.read()
+									<< std::endl;
+							execCount++;
+							break;
+						case 7:
+							wr.write(true);
+							rd.write(true);
+							mreq.write(true);
+							iorq.write(true);
+							pc = pc.to_uint() + 1;
+							execCount = 0;
+							std::cout << "EXECUTE  MOV IX, dat_16 ... [END]"
+									<< std::endl;
+							state = FETCH_INSTR;
+							twoByteInstrB1 = 0;
+						}
+					}  // MOV IX, dat_16
+					else {
+						// MOV HL, dat_16
+						switch (execCount) {
+						case 0:  // Write PC to address bus
+							std::cout << "EXECUTE  MOV HL, dat_16 ... [START]"
+									<< std::endl;
+							addressBus.write(pc);
+							execCount++;
+							break;
+						case 1:
+							// Set control sigs for mem read
+							wr.write(true);
+							rd.write(false);
+							mreq.write(false);
+							iorq.write(true);
+							execCount++;
+							break;
+						case 2:
+							// Write low byte to HL
+							hl = (hl & 0xff00) | (0x00FF & dataBus.read());
+							std::cout << "Got low byte " << dataBus.read()
+									<< std::endl;
+							execCount++;
+							break;
+						case 3:
+							// Reset control signals and pc++
+							wr.write(true);
+							rd.write(true);
+							mreq.write(true);
+							iorq.write(true);
+							pc = pc.to_uint() + 1;
+							execCount++;
+							break;
+						case 4:
+							// Write PC to address bus
+							std::cout << "Will fetch label hi byte at address "
+									<< pc.to_uint() << std::endl;
+							addressBus.write(pc);
+							execCount++;
+							break;
+						case 5:  // Set signals for read
+							wr.write(true);
+							rd.write(false);
+							mreq.write(false);
+							iorq.write(true);
+							execCount++;
+							break;
+						case 6:  // Write hi byte to HL
+							hl = (dataBus.read() << 8) | (hl & 0x00FF);
+							std::cout << "Got hi byte " << dataBus.read()
+									<< std::endl;
+							execCount++;
+							break;
+						case 7:
+							wr.write(true);
+							rd.write(true);
+							mreq.write(true);
+							iorq.write(true);
+							pc = pc.to_uint() + 1;
+							execCount = 0;
+							std::cout << "EXECUTE  MOV HL, dat_16 ... [END]"
+									<< std::endl;
+							state = FETCH_INSTR;
+							twoByteInstrB1 = 0;
+						}  // MOV HL, dat_16
+					}
+					break; // MOV IX or MOV HL
+
 					// INCREMENTS and DECREMENTS
 				case 0x3C:
 					// INC A
@@ -2009,6 +2144,17 @@ private:
 			std::cout << "Instruction -- MOV C, B" << std::endl;
 			state = EXECUTE;
 			twoByteInstrB1 = 0;
+			break;
+		case 0x21:
+			if (twoByteInstrB1 == 0xDD) {
+				// MOV IX, dat_16
+				std::cout << "Instruction -- MOV IX, dat_16" << std::endl;
+			} else {
+				// MOV HL, dat_16
+				std::cout << "Instruction -- MOV HL, dat_16" << std::endl;
+				twoByteInstrB1 = 0;
+			}
+			state = EXECUTE;
 			break;
 
 			// Inkrement und Dekrement

@@ -29,10 +29,10 @@ public:
 		memory[0x220A] = 0x05;
 		memory[0x220B] = 0x22;
 */
-		memory[0] = 0x3E;
-		memory[1] = 0x42;
-		memory[2] = 0xCB;
-		memory[3] = 0x3F;
+		memory[0] = 0x21;
+		memory[1] = 0x88;
+		memory[2] = 0x44;
+		//memory[3] = 0xFF;
 		//memory[4] = 0xA8;
 		//memory[5] = 0x03;
 		//memory[6] = 0x80;
