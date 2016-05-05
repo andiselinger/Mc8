@@ -33,11 +33,11 @@ public:
      memory[0x220A] = 0x05;
      memory[0x220B] = 0x22;
      */
-    memory[0] = 0x31;
-    memory[1] = 0x77;
-    memory[2] = 0x33;
-    //memory[3] = 0xFF;
-    //memory[4] = 0xA8;
+    memory[0] = 0x3E;
+    memory[1] = 0xFF;
+    memory[2] = 0x06;
+    memory[3] = 0xF0;
+    memory[4] = 0xB8;
     //memory[5] = 0x03;
     //memory[6] = 0x80;
 
@@ -45,7 +45,7 @@ public:
 
 private:
 
-  sc_bv<8> memory[65536];			// 16 bit address
+  sc_bv<8> memory[65536];    // 8 bit data, 16 bit address
   unsigned int addressToRead;
 
   void

@@ -47,7 +47,7 @@ private:
   sc_bv<16> zr;
   sc_bv<16> ix;
   sc_bv<16> hl;
-  sc_bv<16> sp;  // Change this to actual stack!!
+  sc_bv<16> sp;  // Stack Pointer
   sc_bv<8> ir;
   sc_bv<8> a;
   sc_bv<8> b;
@@ -58,17 +58,18 @@ private:
   bool flag_z;
   bool flag_pv;
   bool flag_s;
-  sc_bv<4> tempFlags;	// Stores flags directly after computation, before corresponding flags are written
+  sc_bv<4> tempFlags; // Here, the flag are stored directly after the computation,
+                      // before corresponding flags are written
 
-  // ALU
+                      // ALU
   sc_bv<8> alu1;
   sc_bv<8> alu2;
   sc_bv<8> aluRes;
 
   fetch_state_t fetchState;
   fetch_instr_state_t fetchInstrState;
-  unsigned int execCount;	// Indicates the current execution step of instruction
-  unsigned int twoByteInstrB1;		// First Byte of two byte instruction
+  unsigned int execCount; // Indicates the current execution step of instruction
+  unsigned int twoByteInstrB1;  // First Byte of two byte instruction
 public:
 
   SC_HAS_PROCESS(mc8);
@@ -1264,7 +1265,7 @@ private:
                   flag_z = tempFlags[1];
                   flag_pv = tempFlags[2];
                   flag_s = tempFlags[3];
-                  a = aluRes;			// Store result
+                  a = aluRes;    // Store result
                   wr.write (true);
                   rd.write (true);
                   mreq.write (true);
@@ -1645,7 +1646,7 @@ private:
                   flag_z = aluRes.to_uint () == 0;
                   flag_pv = parity (aluRes);
                   flag_s = aluRes[7];
-                  a = aluRes;			// Store result
+                  a = aluRes;    // Store result
                   wr.write (true);
                   rd.write (true);
                   mreq.write (true);
@@ -1835,7 +1836,7 @@ private:
                   flag_z = aluRes.to_uint () == 0;
                   flag_pv = parity (aluRes);
                   flag_s = aluRes[7];
-                  a = aluRes;			// Store result
+                  a = aluRes;     // Store result
                   wr.write (true);
                   rd.write (true);
                   mreq.write (true);
@@ -1869,8 +1870,8 @@ private:
                     break;
                   case 1:
                     // Perform Shift
-                    tempFlags[0] = alu1[7];	// Bit 7 is stored in temp carry flag
-                    aluRes = alu1 << 1;				// Shift Bits
+                    tempFlags[0] = alu1[7]; // Bit 7 is stored in temp carry flag
+                    aluRes = alu1 << 1;       // Shift Bits
                     execCount++;
                     break;
                   case 2:
@@ -1940,6 +1941,197 @@ private:
                 }
               }
               break;  // Shift Right
+
+              // COMPARISONS  - same as substraction but no storing of result
+            case 0xBF:
+              // CP A
+              switch (execCount)
+              {
+                case 0:
+                  std::cout << "EXECUTE CP A ... [START] " << std::endl;
+                  // Load A to alu1
+                  alu1 = a;
+                  std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 1:
+                  // Load A to alu2
+                  alu2 = a;
+                  std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 2:
+                  // Execute Computation
+                  aluRes = sub (alu1, alu2);
+                  execCount++;
+                  break;
+                case 3:
+                  // Set flags and store result
+                  flag_c = tempFlags[0];
+                  flag_z = tempFlags[1];
+                  flag_pv = tempFlags[2];
+                  flag_s = tempFlags[3];
+                  //a = aluRes;  // Do not save the result
+                  //std::cout << "New Value in A: " << a << std::endl;
+                  std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                      << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                  std::cout << "EXECUTE CP A ... [END] " << std::endl;
+                  execCount = 0;
+                  state = FETCH_INSTR;
+                  break;
+                default:
+                  break;
+              }
+              break; // CP A
+
+            case 0xB8:
+              // CP B
+              switch (execCount)
+              {
+                case 0:
+                  std::cout << "EXECUTE CP B ... [START] " << std::endl;
+                  // Load A to alu1
+                  alu1 = a;
+                  std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 1:
+                  // Load B to alu2
+                  alu2 = b;
+                  std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 2:
+                  // Execute Computation
+                  aluRes = sub (alu1, alu2);
+                  execCount++;
+                  break;
+                case 3:
+                  // Set flags and store result
+                  flag_c = tempFlags[0];
+                  flag_z = tempFlags[1];
+                  flag_pv = tempFlags[2];
+                  flag_s = tempFlags[3];
+                  // a = aluRes;  // Do not save the result
+                  // std::cout << "New Value in A: " << a << std::endl;
+                  std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                      << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                  std::cout << "EXECUTE CP B ... [END] " << std::endl;
+                  execCount = 0;
+                  state = FETCH_INSTR;
+                  break;
+                default:
+                  break;
+              }
+              break; // CP B
+
+                case 0xB9:
+                  // CP C
+                  switch (execCount)
+                  {
+                    case 0:
+                      std::cout << "EXECUTE CP C ... [START] " << std::endl;
+                      // Load A to alu1
+                      alu1 = a;
+                      std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                          << std::endl;
+                      execCount++;
+                      break;
+                    case 1:
+                      // Load C to alu2
+                      alu2 = c;
+                      std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+                          << std::endl;
+                      execCount++;
+                      break;
+                    case 2:
+                      // Execute Computation
+                      aluRes = sub (alu1, alu2);
+                      execCount++;
+                      break;
+                    case 3:
+                      // Set flags and store result
+                      flag_c = tempFlags[0];
+                      flag_z = tempFlags[1];
+                      flag_pv = tempFlags[2];
+                      flag_s = tempFlags[3];
+                      //a = aluRes;  // Do not save the result
+                      //std::cout << "New Value in A: " << a << std::endl;
+                      std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                          << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                      std::cout << "EXECUTE CP C ... [END] " << std::endl;
+                      execCount = 0;
+                      state = FETCH_INSTR;
+                      break;
+                    default:
+                      break;
+                  }
+                  break; // CP C
+
+            case 0xFE:
+              // CP dat_8
+              switch (execCount)
+              {
+                case 0:
+                  std::cout << "EXECUTE CP dat_8 ... [START] " << std::endl;
+                  // Read dat8 from Mem, set address
+                  addressBus.write (pc);
+                  execCount++;
+                  break;
+                case 1:
+                  // Load A to ALU
+                  alu1 = a;
+                  std::cout << "Load A = " << a.to_uint () << " to alu1"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 2:
+                  // Set control sigs for mem read
+                  wr.write (true);
+                  rd.write (false);
+                  mreq.write (false);
+                  iorq.write (true);
+                  execCount++;
+                  break;
+                case 3:
+                  // Read dat_8 to ALU
+                  alu2 = dataBus.read ();
+                  std::cout << "Read dat_8 to ALU " << dataBus.read ()
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 4:
+                  // Execute Computation
+                  aluRes = sub (alu1, alu2);
+                  execCount++;
+                  break;
+                case 5:
+                  // set flags, store result and reset control signals
+                  flag_c = tempFlags[0];
+                  flag_z = tempFlags[1];
+                  flag_pv = tempFlags[2];
+                  flag_s = tempFlags[3];
+                  //a = aluRes;    // Do not store result
+                  wr.write (true);
+                  rd.write (true);
+                  mreq.write (true);
+                  iorq.write (true);
+                  pc = pc.to_uint () + 1;
+                  //std::cout << "New Value in A: " << a << std::endl;
+                  std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                      << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                  std::cout << "EXECUTE CP dat_8 ... [END] " << std::endl;
+                  execCount = 0;
+                  state = FETCH_INSTR;
+                  break;
+                default:
+                  break;
+              }
+              break; // CP dat_8
 
             case 0xC2:
               // JPNZ label
@@ -2069,13 +2261,13 @@ private:
       carry[i] = (a[i] && b[i] && carry[i - 1]) || (a[i] && b[i])
           || (a[i] && carry[i - 1]) || (b[i] && carry[i - 1]);
     }
-    tempFlags[0] = carry[7];					// carry flag
-    tempFlags[1] = sum.to_uint () == 0;			// zero flag
-    tempFlags[2] = (carry[6] ^ carry[7]) == 1;// overflow flag; Bauer, Kap. 2.5: "Ein Overflow tritt auf, wenn
-    // ein Übertrag in den letzten Volladdierer hinein - oder aus
-    // ihm heraus geschoben wird; nicht aber dann, wenn der Übertrag
-    // 'durch ihn durch' geschoben wird."
-    tempFlags[3] = sum[7];						// sign flag
+    tempFlags[0] = carry[7];                    // carry flag
+    tempFlags[1] = sum.to_uint () == 0;         // zero flag
+    tempFlags[2] = (carry[6] ^ carry[7]) == 1; // overflow flag; Bauer, Kap. 2.5: "Ein Overflow tritt auf, wenn
+                                               // ein Übertrag in den letzten Volladdierer hinein - oder aus
+                                               // ihm heraus geschoben wird; nicht aber dann, wenn der Übertrag
+                                               // 'durch ihn durch' geschoben wird."
+    tempFlags[3] = sum[7];  // sign flag
     return sum;
   }
 
@@ -2110,7 +2302,7 @@ private:
   void
   traceIt ()
   {
-    /*		myWriter->traceBool(clk.read(), "CLK", sc_time_stamp().to_seconds());
+    /*myWriter->traceBool(clk.read(), "CLK", sc_time_stamp().to_seconds());
      myWriter->traceBool(res.read(), "RES", sc_time_stamp().to_seconds());
 
      myWriter->traceBool(wr.read(), "WR", sc_time_stamp().to_seconds());
@@ -2462,6 +2654,31 @@ private:
           std::cout << "Instruction -- SHR" << std::endl;
           state = EXECUTE;
         }
+        break;
+      case 0xBF:
+        // CP A
+        std::cout << "Instruction -- CP A " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+      case 0xB8:
+        // CP B
+        std::cout << "Instruction -- CP B " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+
+      case 0xB9:
+        // CP C
+        std::cout << "Instruction -- CP C " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+      case 0xFE:
+        // CP dat_8
+        std::cout << "Instruction -- CP dat_8 " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
         break;
 
         // Bedingter Sprung
