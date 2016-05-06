@@ -34,12 +34,14 @@ public:
      memory[0x220B] = 0x22;
      */
     memory[0] = 0x3E;
-    memory[1] = 0xFF;
-    memory[2] = 0x06;
-    memory[3] = 0xF0;
-    memory[4] = 0xB8;
-    //memory[5] = 0x03;
-    //memory[6] = 0x80;
+    memory[1] = 0xAB;
+    memory[2] = 0x0F;
+    memory[3] = 0x0F;
+    memory[4] = 0x0F;
+    // memory[3] = 0xF0;
+    // memory[4] = 0xB8;
+    // memory[5] = 0x03;
+    // memory[6] = 0x80;
 
   }
 

@@ -58,10 +58,12 @@ private:
   bool flag_z;
   bool flag_pv;
   bool flag_s;
-  sc_bv<4> tempFlags; // Here, the flag are stored directly after the computation,
-                      // before corresponding flags are written
 
-                      // ALU
+  // In this vector, the flags are stored directly after the computation,
+  // one execution step before corresponding flags are written
+  sc_bv<4> tempFlags;
+
+  // ALU
   sc_bv<8> alu1;
   sc_bv<8> alu2;
   sc_bv<8> aluRes;
@@ -77,8 +79,8 @@ public:
   mc8 (sc_module_name name) :
       sc_module (name)
   {
-
-    /*		myWriter->registerBool("CLK");
+    /*
+     myWriter->registerBool("CLK");
      myWriter->registerBool("RES");
 
      myWriter->registerBool("WR");
@@ -1942,6 +1944,159 @@ private:
               }
               break;  // Shift Right
 
+            case 0x17:
+              // Rotate with carry left  - RCL
+              switch (execCount)
+              {
+                case 0:
+                  std::cout << "EXECUTE RCL ... [START] " << std::endl;
+                  // Load A to alu1
+                  alu1 = a;
+                  std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 1:
+                  // Perform Rotation
+                  tempFlags[0] = alu1[7];  // Bit 7 is stored in temp carry flag
+                  aluRes = alu1 << 1;      // Shift Bits
+                  aluRes[0] = flag_c;
+                  execCount++;
+                  break;
+                case 2:                  // Set flags
+                  flag_c = tempFlags[0];
+                  execCount++;
+                  break;
+                case 3:
+                  // Set result
+                  a = aluRes;
+                  std::cout << "New Value in A: " << a << std::endl;
+                  std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                      << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                  std::cout << "EXECUTE RCL ... [END] " << std::endl;
+                  execCount = 0;
+                  twoByteInstrB1 = 0;
+                  state = FETCH_INSTR;
+                  break;
+              }
+              break;  // Rotate with carry left
+
+                case 0x07:
+                  // Rotate without carry left  - ROL
+                  switch (execCount)
+                  {
+                    case 0:
+                      std::cout << "EXECUTE ROL ... [START] " << std::endl;
+                      // Load A to alu1
+                      alu1 = a;
+                      std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                          << std::endl;
+                      execCount++;
+                      break;
+                    case 1:
+                    { // (Scope for bool temp)
+                      // Perform Rotation
+                      bool temp = tempFlags[0] = alu1[7];    // Bit 7 is stored in temp carry flag and in bit 0
+                      aluRes = alu1 << 1;    // Shift Bits
+                      aluRes[0] = temp;
+                      execCount++;
+                      break;
+                    }
+                    case 2:       // Set flags
+                      flag_c = tempFlags[0];
+                      execCount++;
+                      break;
+                    case 3:
+                      // Set result
+                      a = aluRes;
+                      std::cout << "New Value in A: " << a << std::endl;
+                      std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                          << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                      std::cout << "EXECUTE ROL ... [END] " << std::endl;
+                      execCount = 0;
+                      twoByteInstrB1 = 0;
+                      state = FETCH_INSTR;
+                      break;
+                  }
+                  break;  // Rotate without carry left
+
+                    case 0x1F:
+                      // Rotate with carry right  - RCR
+                      switch (execCount)
+                      {
+                        case 0:
+                          std::cout << "EXECUTE RCR ... [START] " << std::endl;
+                          // Load A to alu1
+                          alu1 = a;
+                          std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                              << std::endl;
+                          execCount++;
+                          break;
+                        case 1:
+                          // Perform Rotation
+                          tempFlags[0] = alu1[0];  // Bit 0 is stored in temp carry flag
+                          aluRes = alu1 >> 1;      // Shift Bits
+                          aluRes[7] = flag_c;
+                          execCount++;
+                          break;
+                        case 2:                  // Set flags
+                          flag_c = tempFlags[0];
+                          execCount++;
+                          break;
+                        case 3:
+                          // Set result
+                          a = aluRes;
+                          std::cout << "New Value in A: " << a << std::endl;
+                          std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                              << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                          std::cout << "EXECUTE RCR ... [END] " << std::endl;
+                          execCount = 0;
+                          twoByteInstrB1 = 0;
+                          state = FETCH_INSTR;
+                          break;
+                      }
+                      break;  // Rotate with carry right
+
+                        case 0x0F:
+                          // Rotate without carry right  - ROR
+                          switch (execCount)
+                          {
+                            case 0:
+                              std::cout << "EXECUTE ROR ... [START] " << std::endl;
+                              // Load A to alu1
+                              alu1 = a;
+                              std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                                  << std::endl;
+                              execCount++;
+                              break;
+                            case 1:
+                            {  // (Scope for bool temp)
+                              // Perform Rotation
+                              bool temp = tempFlags[0] = alu1[0];    // Bit 0 is stored in temp carry flag and in bit 7
+                              aluRes = alu1 >> 1;    // Shift Bits
+                              aluRes[7] = temp;
+                              execCount++;
+                              break;
+                            }
+                            case 2:       // Set flags
+                              flag_c = tempFlags[0];
+                              execCount++;
+                              break;
+                            case 3:
+                              // Set result
+                              a = aluRes;
+                              std::cout << "New Value in A: " << a << std::endl;
+                              std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                                  << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                              std::cout << "EXECUTE ROR ... [END] " << std::endl;
+                              execCount = 0;
+                              twoByteInstrB1 = 0;
+                              state = FETCH_INSTR;
+                              break;
+                          }
+                          break;  // Rotate without carry right
+
+
               // COMPARISONS  - same as substraction but no storing of result
             case 0xBF:
               // CP A
@@ -2029,48 +2184,48 @@ private:
               }
               break; // CP B
 
-                case 0xB9:
-                  // CP C
-                  switch (execCount)
-                  {
-                    case 0:
-                      std::cout << "EXECUTE CP C ... [START] " << std::endl;
-                      // Load A to alu1
-                      alu1 = a;
-                      std::cout << "Load A = " << alu1.to_uint () << " to alu1"
-                          << std::endl;
-                      execCount++;
-                      break;
-                    case 1:
-                      // Load C to alu2
-                      alu2 = c;
-                      std::cout << "Load C = " << alu2.to_uint () << " to alu2"
-                          << std::endl;
-                      execCount++;
-                      break;
-                    case 2:
-                      // Execute Computation
-                      aluRes = sub (alu1, alu2);
-                      execCount++;
-                      break;
-                    case 3:
-                      // Set flags and store result
-                      flag_c = tempFlags[0];
-                      flag_z = tempFlags[1];
-                      flag_pv = tempFlags[2];
-                      flag_s = tempFlags[3];
-                      //a = aluRes;  // Do not save the result
-                      //std::cout << "New Value in A: " << a << std::endl;
-                      std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-                          << " pv = " << flag_pv << " s = " << flag_s << std::endl;
-                      std::cout << "EXECUTE CP C ... [END] " << std::endl;
-                      execCount = 0;
-                      state = FETCH_INSTR;
-                      break;
-                    default:
-                      break;
-                  }
-                  break; // CP C
+            case 0xB9:
+              // CP C
+              switch (execCount)
+              {
+                case 0:
+                  std::cout << "EXECUTE CP C ... [START] " << std::endl;
+                  // Load A to alu1
+                  alu1 = a;
+                  std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 1:
+                  // Load C to alu2
+                  alu2 = c;
+                  std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+                      << std::endl;
+                  execCount++;
+                  break;
+                case 2:
+                  // Execute Computation
+                  aluRes = sub (alu1, alu2);
+                  execCount++;
+                  break;
+                case 3:
+                  // Set flags and store result
+                  flag_c = tempFlags[0];
+                  flag_z = tempFlags[1];
+                  flag_pv = tempFlags[2];
+                  flag_s = tempFlags[3];
+                  //a = aluRes;  // Do not save the result
+                  //std::cout << "New Value in A: " << a << std::endl;
+                  std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
+                      << " pv = " << flag_pv << " s = " << flag_s << std::endl;
+                  std::cout << "EXECUTE CP C ... [END] " << std::endl;
+                  execCount = 0;
+                  state = FETCH_INSTR;
+                  break;
+                default:
+                  break;
+              }
+              break; // CP C
 
             case 0xFE:
               // CP dat_8
@@ -2286,14 +2441,14 @@ private:
   sub (sc_bv<8> a, sc_bv<8> b)
   {
     sc_bv<8> result = add (a, twoComp (b));
-    tempFlags[0] = !tempFlags[0];	// Carry flag is inverted for substraction (see online MC8 simulator)
+    tempFlags[0] = !tempFlags[0]; // Carry flag needs to be inverted for substraction (see online MC8 simulator)
     return result;
   }
 
   bool
   parity (sc_bv<8> a)
   {
-    bool result = true;		// Parity is true for even number of bits in a
+    bool result = true;    // Parity is true for an even number of bits in a
     for (int i = 0; i < 8; ++i)
       result ^= a[i];
     return result;
@@ -2368,6 +2523,9 @@ private:
     state = FETCH_INSTR;
   }
 
+  //------------------------------------------------
+  //------D E C O D E  I N S T R U C T I O N -------
+  //------------------------------------------------
   void
   decodeInstr (sc_bv<8> i)
   {
@@ -2639,12 +2797,17 @@ private:
         state = EXECUTE;
         twoByteInstrB1 = 0;
         break;
+        // SHIFTS
       case 0x27:
         if (twoByteInstrB1 == 0xCB)
         {
           // Shift Left
           std::cout << "Instruction -- SHL" << std::endl;
           state = EXECUTE;
+        }
+        else
+        {
+          std::cout << "Instruction not valid!" << std::endl;
         }
         break;
       case 0x3F:
@@ -2654,7 +2817,39 @@ private:
           std::cout << "Instruction -- SHR" << std::endl;
           state = EXECUTE;
         }
+        else
+        {
+          std::cout << "Instruction not valid!" << std::endl;
+        }
         break;
+
+        // ROTATE INSTRUCTIONS
+      case 0x17:
+        // RCL
+        std::cout << "Instruction -- RCL " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+      case 0x07:
+        // ROL
+        std::cout << "Instruction -- ROL " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+      case 0x1F:
+        // RCR
+        std::cout << "Instruction -- RCR " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+      case 0x0F:
+        // ROR
+        std::cout << "Instruction -- ROR " << std::endl;
+        state = EXECUTE;
+        twoByteInstrB1 = 0;
+        break;
+
+        // COMPARISONS
       case 0xBF:
         // CP A
         std::cout << "Instruction -- CP A " << std::endl;
@@ -2667,7 +2862,6 @@ private:
         state = EXECUTE;
         twoByteInstrB1 = 0;
         break;
-
       case 0xB9:
         // CP C
         std::cout << "Instruction -- CP C " << std::endl;
