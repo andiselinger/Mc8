@@ -149,10 +149,7 @@ private:
 					fetchState = SET_CONTROL_SIG;
 					break;
 				case SET_CONTROL_SIG:
-					wr.write (true);
-					rd.write (false);
-					mreq.write (false);
-					iorq.write (true);
+					setProcSignals_mem_read();
 					fetchState = READ_TO_INSTR_REG;
 					break;
 				case READ_TO_INSTR_REG:
@@ -161,10 +158,7 @@ private:
 					fetchState = RESET_CONTROL_SIG;
 					break;
 				case RESET_CONTROL_SIG:
-					wr.write (true);
-					rd.write (true);
-					mreq.write (true);
-					iorq.write (true);
+					resetProcSignals();
 					pc = pc.to_uint () + 1;
 					fetchState = SET_ADDRESS;
 					state = DECODE;
@@ -2759,7 +2753,7 @@ private:
 	resetRegAndInternals ()
 	{
 		// Reset Prog counter
-		pc = 0x2000;
+		pc = 0x0000;
 		zr = 0xFFFF;
 		ix = 0x0000;
 		hl = 0x0000;

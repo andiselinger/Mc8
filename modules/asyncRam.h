@@ -33,6 +33,7 @@ public:
 	  // copy ramfile to ram memory
 	  for(int i = 0 ; i < RAM_SIZE ; i++)
 	  {
+	  	cout << "Initializing ROM Address : " << i << " with Value : " << (int) data[i] << endl;
 		  memory[i] = data[i];
 	  }
 

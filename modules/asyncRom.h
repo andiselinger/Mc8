@@ -14,6 +14,7 @@ public:
 
 	SC_CTOR(asyncRom) {
 		SC_THREAD(readData);
+		SC_THREAD(weak);
 
 	}
 
@@ -23,6 +24,7 @@ public:
 
 		for(int i = 0 ; i < ROM_SIZE ; i++)
 			  {
+			cout << "Initializing ROM Address : " << i << " with Value : " << (int) data[i] << endl;
 				  memory[i] = data[i];
 			  }
 
@@ -44,17 +46,26 @@ public:
 
 private:
 
-	sc_bv<16> memory[ROM_SIZE];
+	sc_bv<8> memory[ROM_SIZE];
 	unsigned int addressToRead;
 
 	void readData() {
 		while (1) {
 			wait(rd.negedge_event());
 			addressToRead = addrBus.read().to_uint();
-			wait(ROM_READ_DELAY_US, SC_US);
-			cout << "ROM Data ready." << endl;
+			wait(ROM_READ_DELAY_US, SC_NS);
+			cout << "ROM here, reading Data: " << memory[addressToRead] << " from Address :" << addressToRead << endl;
 			dataBus.write(memory[addressToRead]);
 		}
+	}
+
+	void weak()
+	{
+
+			while (1) {
+				wait(rd.posedge_event());
+				dataBus.write("zzzzzzzz");
+			}
 	}
 
 };
