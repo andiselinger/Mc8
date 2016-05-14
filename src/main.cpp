@@ -1,26 +1,58 @@
 #include <iostream>
+
+#include <string>
 #include "systemc.h"
 //#include "SESYD.hpp"
 
 //LibSESYD::FileWriter *myWriter;
-
 #include "clkResGen.h"
 #include "asyncRom.h"
 #include "asyncRam.h"
+#include "async_io.h"
 #include "mc8.h"
 #include "adress_decoder.h"
+#include "global_definitions.h"
+#include "hexfile.h"
+#include "async_io.h"
+
+
 
 using namespace std;
 
 
 
+
+
 int sc_main(int argc, char* argv[]) {
 
-	//initSesydFramework();
 
-//	myWriter = new FileWriter();
+	if(argc < 2)
+	{
+		cout << "hexfile needed !" << endl;
+		return -1;
+	}
 
+	string filename = argv[1];
 
+	hex_file *hf = new hex_file(filename);
+
+	unsigned char *mem = new unsigned char[ADDRESSABLE_AREA];
+
+	if(hf->copy_data_to_memory(mem, ADDRESSABLE_AREA) != 0)
+	{
+		cout << "error hexfile  " << endl;
+		return -1;
+	}
+
+	unsigned char *rom_data = mem;
+	unsigned char *ram_data = (mem + RAM_START);
+
+	/*
+	initSesydFramework();
+
+	myWriter = new FileWriter();
+
+	 */
 	sc_signal<bool> sig_clk;
 	sc_signal<bool> sig_tclk;
 	sc_signal<bool> sig_res;
@@ -40,9 +72,9 @@ int sc_main(int argc, char* argv[]) {
 	sc_signal<sc_bv<8> > sig_dataBus_cputomem;
 	sc_signal<sc_bv<8> > sig_dataBus_memtocpu;
 	sc_signal<sc_bv<16> > sig_addressBus_cpu;
-	sc_signal<sc_bv<16> > sig_addressBus_ram;
-	sc_signal<sc_bv<16> > sig_addressBus_rom;
-	sc_signal<sc_bv<8> > sig_addressBus_io;
+	sc_signal<sc_bv<16> > sig_addressBus_mem;
+
+	sc_signal_rv<8 > sig_dataBus;
 
 
 
@@ -60,32 +92,33 @@ int sc_main(int argc, char* argv[]) {
 	myMC8.rd(sig_rd);
 	myMC8.mreq(sig_mreq);
 	myMC8.iorq(sig_iorq);
-	myMC8.dataBus_in(sig_dataBus_memtocpu);
-	myMC8.dataBus_out(sig_dataBus_cputomem);
+	myMC8.dataBus(sig_dataBus);
 	myMC8.addressBus(sig_addressBus_cpu);
 
+	// constructor needs Name, Address, bool input or putput
+	asyncIO io1("io1", 0x1, true);
+	io1.addrBus(sig_addressBus_mem);
+	io1.dataBus(sig_dataBus);
+	io1.wr(sig_wr_io);
+	io1.rd(sig_rd_io);
 
-/*
 	asyncRom myRom("myROM");
 	myRom.rd(sig_rd_rom);
-	myRom.addrBus(sig_addressBus_rom);
-	myRom.dataBus(sig_dataBus_memtocpu);
-	myRom.initMemory();
-	*/
+	myRom.addrBus(sig_addressBus_mem);
+	myRom.dataBus(sig_dataBus);
+	myRom.initMemory(rom_data);
+
 
 	asyncRam myRam("myRAM");
 	myRam.rd(sig_rd_ram);
 	myRam.wr(sig_wr_ram);
-	myRam.addrBus(sig_addressBus_ram);
-	myRam.dataBus_in(sig_dataBus_cputomem);
-	myRam.dataBus_out(sig_dataBus_memtocpu);
-	myRam.initMemory();
+	myRam.addrBus(sig_addressBus_mem);
+	myRam.dataBus(sig_dataBus);
+	myRam.initMemory(ram_data);
 
 	address_decoder myAddressDecoder("myAddressDecoder");
 	myAddressDecoder.address_bus_in(sig_addressBus_cpu);
-	myAddressDecoder.address_bus_ram(sig_addressBus_ram);
-	myAddressDecoder.address_bus_rom(sig_addressBus_rom);
-	myAddressDecoder.address_bus_io(sig_addressBus_io);
+	myAddressDecoder.address_bus_out(sig_addressBus_mem);
 	myAddressDecoder.RD_in(sig_rd);
 	myAddressDecoder.WR_in(sig_wr);
 	myAddressDecoder.IO_in(sig_iorq);
@@ -97,26 +130,28 @@ int sc_main(int argc, char* argv[]) {
 	myAddressDecoder.RD_io(sig_rd_io);
 
 
-//	sc_trace_file *fp;
-//	fp=sc_create_vcd_trace_file("wave");
-//
-//	sc_trace(fp,sig_clk,"clk");
-//	sc_trace(fp,sig_res,"res");
-//	sc_trace(fp,sig_wr,"wr");
-//	sc_trace(fp,sig_rd,"rd");
-//	sc_trace(fp,sig_mreq,"mreq");
-//	sc_trace(fp,sig_iorq,"iorq");
-//	sc_trace(fp,sig_dataBus,"dataBus");
-//	sc_trace(fp,sig_addressBus,"addressBus");
+	//	sc_trace_file *fp;
+	//	fp=sc_create_vcd_trace_file("wave");
+	//
+	//	sc_trace(fp,sig_clk,"clk");
+	//	sc_trace(fp,sig_res,"res");
+	//	sc_trace(fp,sig_wr,"wr");
+	//	sc_trace(fp,sig_rd,"rd");
+	//	sc_trace(fp,sig_mreq,"mreq");
+	//	sc_trace(fp,sig_iorq,"iorq");
+	//	sc_trace(fp,sig_dataBus,"dataBus");
+	//	sc_trace(fp,sig_addressBus,"addressBus");
 
-//	myWriter->setupVCDFile("mc8");
+	//	myWriter->setupVCDFile("mc8");
 
 	sc_start();	// run the simulation for 100 µ-sec
 
 	//myWriter->closeFile();
-//	sc_close_vcd_trace_file(fp);
+	//sc_close_vcd_trace_file(fp);
+
+
 
 	return 0;
 
 }
-;
+
