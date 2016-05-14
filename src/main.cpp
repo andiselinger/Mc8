@@ -23,7 +23,7 @@ sc_main (int argc, char* argv[])
 
 	if (argc < 2)
 	{
-		cout << "hexfile needed !" << endl;
+		std::cout << "Please specify .hex file as parameter!" << std::endl;
 		return -1;
 	}
 
