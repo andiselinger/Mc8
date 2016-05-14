@@ -112,7 +112,7 @@ private :
 			{
 				data[i] = strtoul(line.substr((DATA_START+i*2),2).c_str(), NULL, 16);
 #ifdef TEST
-				cout << "Data Byte "<< i << " Data : " << data[i] << endl;
+				cout << "Data Byte "<< i << " Data : " << (int)data[i] << endl;
 #endif
 			}
 

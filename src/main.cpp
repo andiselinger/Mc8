@@ -20,9 +20,6 @@
 using namespace std;
 
 
-
-
-
 int sc_main(int argc, char* argv[]) {
 
 
@@ -75,6 +72,7 @@ int sc_main(int argc, char* argv[]) {
 	sc_signal<sc_bv<16> > sig_addressBus_mem;
 
 	sc_signal_rv<8 > sig_dataBus;
+	sc_signal_rv<8> connect;
 
 
 
@@ -101,6 +99,7 @@ int sc_main(int argc, char* argv[]) {
 	io1.dataBus(sig_dataBus);
 	io1.wr(sig_wr_io);
 	io1.rd(sig_rd_io);
+	io1.connect(connect);
 
 	asyncRom myRom("myROM");
 	myRom.rd(sig_rd_rom);
@@ -150,7 +149,7 @@ int sc_main(int argc, char* argv[]) {
 	//sc_close_vcd_trace_file(fp);
 
 
-
+	delete [] mem;
 	return 0;
 
 }

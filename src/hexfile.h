@@ -8,7 +8,7 @@
 #ifndef HEXFILE_H_
 #define HEXFILE_H_
 
-//#define TEST
+#define TEST
 
 #include <vector>
 #include <fstream>
@@ -39,15 +39,15 @@ public:
 
 	virtual ~hex_file()
 	{
-		delete(&records);
+		delete (&records);
 
 	}
 
 	int copy_data_to_memory(unsigned char * data_out, int memlen)
 	{
-		for(unsigned int i=1 ; i < records.size() ; i++)
+		for(unsigned int i=0 ; i < records.size() ; i++)
 		{
-			record *act_rec = records.at(i);
+			record *act_rec = records[i];
 
 			if(act_rec->Address < memlen)
 			{
@@ -56,7 +56,7 @@ public:
 				{
 					data_out[act_rec->Address + addr_cnt] = act_rec->data[addr_cnt];
 #ifdef TEST
-					cout << "Copy " << act_rec->data[addr_cnt] << " to Address : " << act_rec->Address + addr_cnt << endl;
+					cout << "Copy " << (int)act_rec->data[addr_cnt] << " to Address : " << act_rec->Address + addr_cnt << endl;
 #endif
 				}
 
