@@ -1,88 +1,97 @@
 #ifndef ASYNC_IO_H
 #define ASYNC_IO_H
 
-#if 0
 
+#include "global_definitions.h"
 #include "systemc.h"
 
-#define RAM_READ_DELAY_NS 5
-#define RAM_WRITE_DELAY_NS 5
 
-SC_MODULE(asyncIO)
+
+class asyncIO: public sc_module //SC_MODULE(asyncIO)
 {
 
 public:
 
+	SC_HAS_PROCESS(asyncIO);
+
 	sc_in<bool> wr;
 	sc_in<bool> rd;
 	sc_in<sc_bv<16> > addrBus;
-	sc_in<sc_bv<8> > dataBus_in;
-	sc_out<sc_bv<8> > dataBus_out;
+	sc_inout_rv<8> dataBus;
 
+	sc_inout_rv<8> connect;
 
-	/*SC_CTOR(asyncIO)
-  {
+/*	SC_CTOR(asyncIO)
+	{
     SC_THREAD(readData);
     SC_THREAD(writeData);
 
-    address =
+
   }*/
 
-	asyncIO(sc_module_name nm, sc_uint<8> address_) : sc_module(nm), address(address_)
+	asyncIO(sc_module_name nm, sc_uint<8> address_, bool io_) : sc_module(nm), port_address(address_),io(io_)
 	{
-		busy = false;
+		// configure if input or output
+		// io = 1 input io = 0 output
 
-		 SC_THREAD(readData);
-		 SC_THREAD(writeData);
+		if(io)
+		{
+			SC_THREAD(readData);
+		}else
+		{
+			SC_THREAD(writeData);
+		}
+		SC_THREAD(weak);
 	}
 
 
 
 private:
 
-  sc_bv<8> memory[65536];    // 8 bit data, 16 bit address
-  sc_uint<8> address;
+	sc_bv<8> memory;
+	sc_uint<8> port_address;
+	bool io;
 
-  bool busy;
 
 
-  void  readData ()
-  {
-    while (1)
-    {
-      wait (rd.negedge_event ());
+	void  readData ()
+	{
+		while (1)
+		{
+			wait (rd.negedge_event ());
 
-      if(!busy){
+			sc_bv<8> io_addr = addrBus.read ().range(7,0);
 
-    	  busy = true;
-    	  address = addrBus.read ().to_uint ();
-    	  wait (RAM_READ_DELAY_NS, SC_NS);
-    	  dataBus_out.write (memory[address]);
-    	  busy = false;
-      }
+			if( io_addr == port_address)	dataBus.write (connect.read());
+		}
+	}
 
-    }
-  }
+	void  writeData ()
+	{
+		while (1)
+				{
+					wait (rd.negedge_event ());
 
-  void  writeData ()
-    {
-      while (1)
-      {
-        wait (wr.negedge_event ());
+					sc_bv<8> io_addr = addrBus.read ().range(7,0);
 
-        if(!busy){
+					if( io_addr == port_address)	connect.write (dataBus.read());
+				}
+	}
 
-          	  busy = true;
-          	  address = addrBus.read ().to_uint ();
-          	  wait (RAM_WRITE_DELAY_NS, SC_NS);
-          	  memory[address] = dataBus_in.read();
-          	busy = false;
-        }
-      }
-    }
 
+	void weak()
+	{
+		// if there is no reading of the io set the data Output to all z
+
+		while(1)
+		{
+			wait (rd.posedge_event ());
+			dataBus.write("zzzzzzzz");
+		}
+
+	}
 };
 
-#endif
+
 
 #endif

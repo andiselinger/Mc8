@@ -2,15 +2,15 @@
 #define ADRESS_DECODER
 
 #include "systemc.h"
+#include "global_definitions.h"
+
+
+#define RAM_START (ROM_SIZE+1)
 
 SC_MODULE(address_decoder)
 {
 public :
 
-/*	sc_inout<sc_bv<8> > data_cpu;
-	sc_inout<sc_bv<8> > data_ram;
-	sc_inout<sc_bv<8> > data_rom;
-	sc_inout<sc_bv<8> > data_io;*/
 
 	sc_in<sc_bv<16> > address_bus_in;
 	sc_in< bool > WR_in;
@@ -18,9 +18,8 @@ public :
 	sc_in< bool > M_in;
 	sc_in< bool > IO_in;
 
-	sc_out<sc_bv<16> > address_bus_ram;
-	sc_out<sc_bv<16> > address_bus_rom;
-	sc_out<sc_bv<8> > address_bus_io;
+	sc_out<sc_bv<16> > address_bus_out;
+
 
 	sc_out< bool > WR_io;
 	sc_out< bool > WR_ram;
@@ -36,6 +35,8 @@ public :
 
 		sensitive << M_in;
 		sensitive << IO_in;
+
+		dont_initialize();
 	}
 
 private :
@@ -47,17 +48,17 @@ private :
 		if(IO_in.read() == true && M_in.read() == false )
 		{
 			//forward control signals to ram
-			if(address >= 0x2000 && address <=0x3FFF)
+			if(address >= RAM_START && address <= ADDRESSABLE_AREA)
 			{
-				address_bus_ram.write(address - 0x2000);
+				address_bus_out.write((address - RAM_START));
 				WR_ram.write(WR_in.read());
 				RD_ram.write(RD_in.read());
 			}
 
 			//forward control signals to rom
-			else if(address >= 0x0000 && address <0x2000)
+			else if(address >= 0x0000 && address < RAM_START)
 			{
-				address_bus_ram.write(address);
+				address_bus_out.write(address);
 				RD_rom.write(RD_in.read());
 			}
 
