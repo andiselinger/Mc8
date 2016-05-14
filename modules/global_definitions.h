@@ -19,7 +19,6 @@
 #define RAM_READ_DELAY_NS 1
 #define RAM_WRITE_DELAY_NS 1
 
-
 #define ROM_READ_DELAY_US 5
 
 #endif /* GLOBAL_DEFINITIONS_H_ */

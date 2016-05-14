@@ -1,13 +1,10 @@
 #ifndef ASYNC_IO_H
 #define ASYNC_IO_H
 
-
 #include "global_definitions.h"
 #include "systemc.h"
 
-
-
-class asyncIO: public sc_module //SC_MODULE(asyncIO)
+class asyncIO : public sc_module //SC_MODULE(asyncIO)
 {
 
 public:
@@ -21,30 +18,30 @@ public:
 
 	sc_inout_rv<8> connect;
 
-/*	SC_CTOR(asyncIO)
-	{
-    SC_THREAD(readData);
-    SC_THREAD(writeData);
+	/*	SC_CTOR(asyncIO)
+	 {
+	 SC_THREAD(readData);
+	 SC_THREAD(writeData);
 
 
-  }*/
+	 }*/
 
-	asyncIO(sc_module_name nm, sc_uint<8> address_, bool io_) : sc_module(nm), port_address(address_),io(io_)
+	asyncIO (sc_module_name nm, sc_uint<8> address_, bool io_) :
+			sc_module (nm), port_address (address_), io (io_)
 	{
 		// configure if input or output
 		// io = 1 input io = 0 output
 
-		if(io)
+		if (io)
 		{
 			SC_THREAD(readData);
-		}else
+		}
+		else
 		{
 			SC_THREAD(writeData);
 		}
 		SC_THREAD(weak);
 	}
-
-
 
 private:
 
@@ -52,46 +49,46 @@ private:
 	sc_uint<8> port_address;
 	bool io;
 
-
-
-	void  readData ()
+	void
+	readData ()
 	{
 		while (1)
 		{
 			wait (rd.negedge_event ());
 
-			sc_bv<8> io_addr = addrBus.read ().range(7,0);
+			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
-			if( io_addr == port_address)	dataBus.write (connect.read());
+			if (io_addr == port_address)
+				dataBus.write (connect.read ());
 		}
 	}
 
-	void  writeData ()
+	void
+	writeData ()
 	{
 		while (1)
-				{
-					wait (rd.negedge_event ());
+		{
+			wait (rd.negedge_event ());
 
-					sc_bv<8> io_addr = addrBus.read ().range(7,0);
+			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
-					if( io_addr == port_address)	connect.write (dataBus.read());
-				}
+			if (io_addr == port_address)
+				connect.write (dataBus.read ());
+		}
 	}
 
-
-	void weak()
+	void
+	weak ()
 	{
 		// if there is no reading of the io set the data Output to all z
 
-		while(1)
+		while (1)
 		{
 			wait (rd.posedge_event ());
-			dataBus.write("zzzzzzzz");
+			dataBus.write ("zzzzzzzz");
 		}
 
 	}
 };
-
-
 
 #endif
