@@ -1,0 +1,21 @@
+mov A,test1
+mov test2,A
+mov HL,OFFSET test7
+mov test4,HL
+mov IX,test5
+mov test6,IX
+mov A,[HL]
+mov [HL],A
+
+
+
+
+
+test1: DB FFh
+test2: 
+test3: DW EEEEh
+test4:
+test5: DW FFFFh
+test6:
+test7: DB EEh
+test8:

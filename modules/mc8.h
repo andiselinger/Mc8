@@ -35,9 +35,11 @@ public:
 	sc_out<bool> mreq;
 	sc_out<bool> iorq;
 
-	sc_in<sc_bv<8> > dataBus_in;
-	sc_out<sc_bv<8> > dataBus_out;
+	/*	sc_in<sc_bv<8> > dataBus_in;
+	sc_out<sc_bv<8> > dataBus;*/
 	sc_out<sc_bv<16> > addressBus;
+
+	sc_inout_rv<8> dataBus;
 
 	state_t state;
 
@@ -142,27 +144,21 @@ private:
 				case SET_ADDRESS:
 					std::cout << "FETCH INSTRUCTION ... [START] " << std::endl;
 					std::cout << "Will fetch instruction at address " << pc.to_uint ()
-                												  << std::endl;
+                																																								  																						<< std::endl;
 					addressBus.write (pc);
 					fetchState = SET_CONTROL_SIG;
 					break;
 				case SET_CONTROL_SIG:
-					wr.write (true);
-					rd.write (false);
-					mreq.write (false);
-					iorq.write (true);
+					setProcSignals_mem_read();
 					fetchState = READ_TO_INSTR_REG;
 					break;
 				case READ_TO_INSTR_REG:
-					ir = dataBus_in.read ();
+					ir = read_databus_resolved();
 					std::cout << "Got instruction " << ir.to_uint () << std::endl;
 					fetchState = RESET_CONTROL_SIG;
 					break;
 				case RESET_CONTROL_SIG:
-					wr.write (true);
-					rd.write (true);
-					mreq.write (true);
-					iorq.write (true);
+					resetProcSignals();
 					pc = pc.to_uint () + 1;
 					fetchState = SET_ADDRESS;
 					state = DECODE;
@@ -192,8 +188,8 @@ private:
 						fetchInstrState = READ_TO_ZR_LO;
 						break;
 					case READ_TO_ZR_LO:
-						zr = (zr & 0xff00) | (0x00FF & dataBus_in.read ());
-						std::cout << "Got low byte " << dataBus_in.read () << std::endl;
+						zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+						std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 						fetchInstrState = RESET_CONTROL_SIG_LO;
 						break;
 					case RESET_CONTROL_SIG_LO:
@@ -218,8 +214,8 @@ private:
 						fetchInstrState = READ_TO_ZR_HI;
 						break;
 					case READ_TO_ZR_HI:
-						zr = (dataBus_in.read () << 8) | (zr & 0x00FF);
-						std::cout << "Got hi byte " << dataBus_in.read () << std::endl;
+						zr = (read_databus_resolved() << 8) | (zr & 0x00FF);
+						std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 						fetchInstrState = RESET_CONTROL_SIG_HI;
 						break;
 					case RESET_CONTROL_SIG_HI:
@@ -276,9 +272,7 @@ private:
 								break;
 							case 2:
 								// Read dat_8 to A
-								a = dataBus_in.read ();
-								std::cout << "Read dat_8 and copy to A " << dataBus_in.read ()
-                    												  << std::endl;
+								a = read_databus_resolved();
 								execCount++;
 								break;
 							case 3:
@@ -316,9 +310,9 @@ private:
 									break;
 								case 2:
 									// Read dat_8 to B
-									b = dataBus_in.read ();
-									std::cout << "Read dat_8 and copy to B " << dataBus_in.read ()
-                    												  << std::endl;
+									b = read_databus_resolved();
+									std::cout << "Read dat_8 and copy to B " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 									execCount++;
 									break;
 								case 3:
@@ -356,9 +350,9 @@ private:
 										break;
 									case 2:
 										// Read dat_8 to C
-										c = dataBus_in.read ();
-										std::cout << "Read dat_8 and copy to c " << dataBus_in.read ()
-                    												  << std::endl;
+										c = read_databus_resolved();
+										std::cout << "Read dat_8 and copy to c " << read_databus_resolved()
+																				<< std::endl;
 										execCount++;
 										break;
 									case 3:
@@ -431,9 +425,8 @@ private:
 												break;
 											case 2:
 												// Write low byte to IX
-												ix = (ix & 0xff00) | (0x00FF & dataBus_in.read ());
-												std::cout << "Got low byte " << dataBus_in.read ()
-                        												<< std::endl;
+												ix = (ix & 0xff00) | (0x00FF & read_databus_resolved());
+												std::cout << "Got low byte " << read_databus_resolved()<< std::endl;
 												execCount++;
 												break;
 											case 3:
@@ -460,8 +453,8 @@ private:
 												execCount++;
 												break;
 											case 6:  // Write hi byte to IX
-												ix = (dataBus_in.read () << 8) | (ix & 0x00FF);
-												std::cout << "Got hi byte " << dataBus_in.read () << std::endl;
+												ix = (read_databus_resolved() << 8) | (ix & 0x00FF);
+												std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 												execCount++;
 												break;
 											case 7:
@@ -498,9 +491,9 @@ private:
 												break;
 											case 2:
 												// Write low byte to HL
-												hl = (hl & 0xff00) | (0x00FF & dataBus_in.read ());
-												std::cout << "Got low byte " << dataBus_in.read ()
-                        												<< std::endl;
+												hl = (hl & 0xff00) | (0x00FF & read_databus_resolved());
+												std::cout << "Got low byte " << read_databus_resolved()
+                        																																																														<< std::endl;
 												execCount++;
 												break;
 											case 3:
@@ -527,8 +520,8 @@ private:
 												execCount++;
 												break;
 											case 6:  // Write hi byte to HL
-												hl = (dataBus_in.read () << 8) | (hl & 0x00FF);
-												std::cout << "Got hi byte " << dataBus_in.read () << std::endl;
+												hl = (read_databus_resolved() << 8) | (hl & 0x00FF);
+												std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 												execCount++;
 												break;
 											case 7:
@@ -566,8 +559,8 @@ private:
 											break;
 										case 2:
 											// Write low byte to SP
-											sp = (sp & 0xff00) | (0x00FF & dataBus_in.read ());
-											std::cout << "Got low byte " << dataBus_in.read () << std::endl;
+											sp = (sp & 0xff00) | (0x00FF & read_databus_resolved());
+											std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 											execCount++;
 											break;
 										case 3:
@@ -594,8 +587,8 @@ private:
 											execCount++;
 											break;
 										case 6:  // Write hi byte to SP
-											sp = (dataBus_in.read () << 8) | (sp & 0x00FF);
-											std::cout << "Got hi byte " << dataBus_in.read () << std::endl;
+											sp = (read_databus_resolved() << 8) | (sp & 0x00FF);
+											std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 											execCount++;
 											break;
 										case 7:
@@ -700,8 +693,123 @@ private:
 
 											break;
 
+											// Registerindirekte Adressierung
+											//---------------------------------------------------------------------------------------
+
+										case 0x7D: // MOV A,[HL]
+
+											if(execCount == 0) std::cout << "EXECUTE  MOV A, [HL] ... [START]" << std::endl;
+
+											if(mov_register_sourceAddressRegister(&a,&hl))
+											{
+												std::cout << "EXECUTE  MOV A, [HL] ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+
+											break;
+
+										case 0x77:// MOV [HL],A
+
+											if(execCount == 0) std::cout << "EXECUTE  MOV [HL], A ... [START]" << std::endl;
+
+											if(mov_destinationAddressRegister_register(&hl,&a))
+											{
+												std::cout << "EXECUTE  MOV [HL], A ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+
+											break;
+
+											// Stackbefehle
+											//---------------------------------------------------------------------------------------
+
+										case 0xF5: // PUSH
+											if(execCount == 0) std::cout << "EXECUTE  PUSH ... [START]" << std::endl;
+
+											if(push())
+											{
+												std::cout << "EXECUTE  IN POP ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
+										case 0xF1: // POP
+											if(execCount == 0) std::cout << "EXECUTE  POP ... [START]" << std::endl;
+
+											if(pop())
+											{
+												std::cout << "EXECUTE  POP ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
+											// Ein-Ausgabebefehle
+											//---------------------------------------------------------------------------------------
+
+										case 0xDB: // IN A,port
+											if(execCount == 0) std::cout << "EXECUTE  IN A,port ... [START]" << std::endl;
+
+											if(in_a_port())
+											{
+												std::cout << "EXECUTE  IN A,port ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
+										case 0xD3: // OUT port,A
+											if(execCount == 0) std::cout << "EXECUTE  OUT port,A ... [START]" << std::endl;
+
+											if(out_port_a())
+											{
+												std::cout << "EXECUTE  OUT port,A ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
+											// Unterprogrammbefehle
+											//---------------------------------------------------------------------------------------
+
+										case 0xCD: // CALL label
+											if(execCount == 0) std::cout << "EXECUTE  CALL label ... [START]" << std::endl;
+
+											if(call_label())
+											{
+												std::cout << "EXECUTE  CALL label ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
+										case 0xC9: // RET
+											if(execCount == 0) std::cout << "EXECUTE  OUT RET ... [START]" << std::endl;
+
+											if(ret())
+											{
+												std::cout << "EXECUTE  OUT RET ... [END]" << std::endl;
+												execCount = 0;
+												state = FETCH_INSTR;
+												twoByteInstrB1 = 0;
+											}
+											break;
+
 
 											// INCREMENTS and DECREMENTS
+											//---------------------------------------------------------------------------------------
+
+
 										case 0x3C:
 											// INC A
 											switch (execCount)
@@ -1155,9 +1263,9 @@ private:
 																					break;
 																				case 3:
 																					// Read dat_8 to ALU
-																					alu2 = dataBus_in.read ();
-																					std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																					alu2 = read_databus_resolved();
+																					std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																					execCount++;
 																					break;
 																				case 4:
@@ -1345,9 +1453,9 @@ private:
 																									break;
 																								case 3:
 																									// Read dat_8 to ALU
-																									alu2 = dataBus_in.read ();
-																									std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																									alu2 = read_databus_resolved();
+																									std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																									execCount++;
 																									break;
 																								case 4:
@@ -1536,9 +1644,9 @@ private:
 																													break;
 																												case 3:
 																													// Read dat_8 to ALU
-																													alu2 = dataBus_in.read ();
-																													std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																													alu2 = read_databus_resolved();
+																													std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																													execCount++;
 																													break;
 																												case 4:
@@ -1726,9 +1834,9 @@ private:
 																																	break;
 																																case 3:
 																																	// Read dat_8 to ALU
-																																	alu2 = dataBus_in.read ();
-																																	std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																																	alu2 = read_databus_resolved();
+																																	std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																																	execCount++;
 																																	break;
 																																case 4:
@@ -1916,9 +2024,9 @@ private:
 																																					break;
 																																				case 3:
 																																					// Read dat_8 to ALU
-																																					alu2 = dataBus_in.read ();
-																																					std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																																					alu2 = read_databus_resolved();
+																																					std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																																					execCount++;
 																																					break;
 																																				case 4:
@@ -2348,9 +2456,9 @@ private:
 																																													break;
 																																												case 3:
 																																													// Read dat_8 to ALU
-																																													alu2 = dataBus_in.read ();
-																																													std::cout << "Read dat_8 to ALU " << dataBus_in.read ()
-                    												  << std::endl;
+																																													alu2 = read_databus_resolved();
+																																													std::cout << "Read dat_8 to ALU " << read_databus_resolved()
+                    																																								  																						<< std::endl;
 																																													execCount++;
 																																													break;
 																																												case 4:
@@ -2508,7 +2616,7 @@ private:
 		{
 			sum[i] = (a[i] ^ b[i]) ^ carry[i - 1];
 			carry[i] = (a[i] && b[i] && carry[i - 1]) || (a[i] && b[i])
-        												  || (a[i] && carry[i - 1]) || (b[i] && carry[i - 1]);
+        																																								  																						|| (a[i] && carry[i - 1]) || (b[i] && carry[i - 1]);
 		}
 		tempFlags[0] = carry[7];                    // carry flag
 		tempFlags[1] = sum.to_uint () == 0;         // zero flag
@@ -2561,7 +2669,7 @@ private:
 
      myWriter->traceWire16(addressBus.read().to_uint(), "ABus",
      sc_time_stamp().to_seconds());
-     myWriter->traceWire8(dataBus_in.read().to_uint(), "DBus",
+     myWriter->traceWire8(read_databus_resolved().to_uint(), "DBus",
      sc_time_stamp().to_seconds());
 
      myWriter->traceWire16(pc.to_uint(), "REG_PC",
@@ -2613,6 +2721,10 @@ private:
 
 	void setProcSignals_mem_read()
 	{
+		// write all z to databus for resolved bus
+
+		dataBus.write("zzzzzzzz");
+
 		wr.write (true);
 		rd.write (false);
 		mreq.write (false);
@@ -2621,13 +2733,15 @@ private:
 
 	void setProcSignals_io_read()
 	{
+		dataBus.write("zzzzzzzz");
+
 		wr.write (true);
 		rd.write (false);
 		mreq.write (true);
 		iorq.write (false);
 	}
 
-	void setProcSignals_iom_write()
+	void setProcSignals_io_write()
 	{
 		wr.write (false);
 		rd.write (true);
@@ -2639,7 +2753,7 @@ private:
 	resetRegAndInternals ()
 	{
 		// Reset Prog counter
-		pc = 0x2000;
+		pc = 0x0000;
 		zr = 0xFFFF;
 		ix = 0x0000;
 		hl = 0x0000;
@@ -2788,10 +2902,70 @@ private:
 			break;
 
 
-			//------------------------------------------------------------------------
+			// Registerindirekte Adressierung
+			//---------------------------------------------------------------------------------------
+
+		case 0x7D: // MOV A,[HL]
+			std::cout << "Instruction -- MOV A,[HL]" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+		case 0x77:// MOV [HL],A
+			std::cout << "Instruction -- MOV [HL],A" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+
+			// Stackbefehle
+			//---------------------------------------------------------------------------------------
+
+		case 0xF5: // PUSH
+			std::cout << "Instruction -- PUSH" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+		case 0xF1: // POP
+			std::cout << "Instruction -- POP" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+			// Ein-Ausgabebefehle
+			//---------------------------------------------------------------------------------------
+
+		case 0xDB: // IN A,port
+			std::cout << "Instruction -- IN A,port" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+		case 0xD3: // OUT port,A
+			std::cout << "Instruction -- OUT port,A" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+			// Unterprogrammbefehle:
+			//---------------------------------------------------------------------------------------
+
+		case 0xCD: // CALL label
+			std::cout << "Instruction -- CALL label" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
+
+		case 0xC9: // RET
+			std::cout << "Instruction -- RET" << std::endl;
+			state = EXECUTE;
+			twoByteInstrB1 = 0;
+			break;
 
 
 			// Inkrement und Dekrement
+			//------------------------------------------------------------------------
 		case 0x3C:
 			// INC A
 			std::cout << "Instruction -- INC A" << std::endl;
@@ -3174,7 +3348,7 @@ private:
 
 			// test register len
 			cout << "Write data form databus to register" << endl;
-			*reg_destination = dataBus_in.read();
+	 *reg_destination = read_databus_resolved();
 			execCount_internal++;
 			execCount++;
 			ready = false;
@@ -3225,8 +3399,8 @@ private:
 		case 2:
 			// Write low byte to SP
 			cout << "Write low byte of data form databus to register" << endl;
-			*reg_destination = (*reg_destination & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+	 *reg_destination = (*reg_destination & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount_internal ++;
 			execCount++;
 			ready = false;
@@ -3261,8 +3435,8 @@ private:
 			ready = false;
 			break;
 		case 6:  // Write hi byte to SP
-			*reg_destination = (dataBus_in.read() << 8) | (*reg_destination & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+	 *reg_destination = (read_databus_resolved() << 8) | (*reg_destination & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount_internal ++;
 			execCount++;
 			ready = false;
@@ -3283,64 +3457,7 @@ private:
 
 	}
 
-	bool read_from_memaddress_to_register(sc_bv<16> *reg_source_addr , sc_bv<8> *reg_destination )
-	{
-		static int execCount_internal = 0;
-		bool ready = false;
 
-		switch (execCount_internal) {
-
-		case 0:
-			// Write address register to address bus
-			addressBus.write(reg_source_addr->to_uint());
-			execCount_internal++;
-			execCount++;
-			ready = false;
-			break;
-
-		case 1:
-			//Set control sigs for mem read
-
-			cout << "Register   : " << reg_source_addr->to_uint() << endl;
-			cout << "AddressBus : " << addressBus.read().to_uint() << endl;
-
-			wr.write(true);
-			rd.write(false);
-			mreq.write(false);
-			iorq.write(true);
-			execCount_internal++;
-			execCount++;
-			ready = false;
-			break;
-
-		case 2:
-
-			// test register len
-			*reg_destination = dataBus_in.read();
-			execCount_internal++;
-			execCount++;
-			ready = false;
-			break;
-
-		case 3:
-			cout << "dataBus_in : " << dataBus_in.read() << endl;
-			cout << "regdest : " << *reg_destination << endl;
-			cout << "A : " << a << endl;
-
-			// Reset control signals and
-			wr.write(true);
-			rd.write(true);
-			mreq.write(true);
-			iorq.write(true);
-			execCount_internal = 0;
-			execCount++;
-			ready = true;
-			break;
-
-		}
-
-		return ready;
-	}
 
 	bool read_from_memaddress_to_register(sc_bv<16> *reg_source_addr , sc_bv<16> *reg_destination )
 	{
@@ -3375,7 +3492,7 @@ private:
 		case 2:
 
 			// test register len
-			*reg_destination = dataBus_in.read();
+	 *reg_destination = read_databus_resolved();
 			execCount_internal++;
 			execCount++;
 			ready = false;
@@ -3388,7 +3505,7 @@ private:
 			rd.write(true);
 			mreq.write(true);
 			iorq.write(true);
-			*reg_source_addr = reg_source_addr->to_uint() + 1;
+	 *reg_source_addr = reg_source_addr->to_uint() + 1;
 			execCount++;
 			ready = false;
 			break;
@@ -3419,7 +3536,7 @@ private:
 		case 6:
 
 			// write high byte
-			*reg_destination = dataBus_in.read();
+	 *reg_destination = read_databus_resolved();
 			execCount_internal++;
 			execCount++;
 			ready = true;
@@ -3463,7 +3580,7 @@ private:
 		case 2:
 
 			// test register len
-			dataBus_out.write(*reg_source);
+			dataBus.write(*reg_source);
 			execCount_internal++;
 			execCount++;
 			ready = false;
@@ -3518,7 +3635,7 @@ private:
 			sc_bv<8> data = *reg_source;
 
 
-			dataBus_out.write(data);
+			dataBus.write(data);
 			execCount_internal++;
 			execCount++;
 			ready = false;
@@ -3530,7 +3647,7 @@ private:
 			rd.write(true);
 			mreq.write(true);
 			iorq.write(true);
-			*reg_destination_addr = reg_destination_addr->to_uint() + 1;
+	 *reg_destination_addr = reg_destination_addr->to_uint() + 1;
 			execCount++;
 			ready = false;
 			break;
@@ -3549,7 +3666,7 @@ private:
 			sc_bv<8> data = *reg_source >> 8;
 
 
-			dataBus_out.write(data);
+			dataBus.write(data);
 			execCount_internal++;
 			execCount++;
 			ready = false;
@@ -3573,7 +3690,71 @@ private:
 
 		return ready;
 	}
-*/
+	 */
+
+	bool mov_register_sourceAddressRegister(sc_bv<8> *reg_destination , sc_bv<16> *reg_source_addr)
+	{
+		bool ready = false;
+
+		switch (execCount) {
+
+		case 0:	// Write reg_source_address register to address bus
+			addressBus.write(reg_source_addr->to_uint());
+			execCount++;
+			break;
+
+		case 1:	//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 2:	// read data from bus to destination
+			*reg_destination = read_databus_resolved();
+			execCount++;
+			break;
+
+		case 3: // reset control signals
+			resetProcSignals();
+			execCount = 0;
+			ready = true;
+			break;
+
+		}
+
+		return ready;
+	}
+
+	bool mov_destinationAddressRegister_register(sc_bv<16> *reg_destination_addr , sc_bv<8> *reg_source)
+	{
+		bool ready = false;
+
+		switch (execCount) {
+
+		case 0:	// Write reg_source_address register to address bus
+			addressBus.write(reg_destination_addr->to_uint());
+			execCount++;
+			break;
+
+		case 1:	//Set control sigs for mem read
+			setProcSignals_mem_write();
+			execCount++;
+			break;
+
+		case 2:	// read data from bus to destination
+			dataBus.write(*reg_source);
+			execCount++;
+			break;
+
+		case 3: // reset control signals
+			resetProcSignals();
+			execCount = 0;
+			ready = true;
+			break;
+
+		}
+
+		return ready;
+	}
 
 	bool mov_label_register(sc_bv<16> *reg_source)
 	{
@@ -3595,8 +3776,8 @@ private:
 
 		case 2:	// Write low byte to ZR
 			cout << "Write low byte of data form databus to register" << endl;
-			zr = (zr & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 3:	// Reset control signals and pc++
@@ -3614,8 +3795,8 @@ private:
 			execCount++;
 			break;
 		case 6:  // Write hi byte to zr
-			zr = (dataBus_in.read() << 8) | (zr & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+			zr = (read_databus_resolved() << 8) | (zr & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 7: // reset control signals and increment pc
@@ -3637,9 +3818,9 @@ private:
 			break;
 		case 10: //write data to Memory
 		{	sc_bv<8> lowByte = reg_source->range(7,0);
-			dataBus_out.write(lowByte);
-			execCount++;
-			break;}
+		dataBus.write(lowByte);
+		execCount++;
+		break;}
 		case 11: // increment zr and reset control signals
 			resetProcSignals();
 			zr = zr.to_uint() + 1;
@@ -3659,7 +3840,7 @@ private:
 		case 14:// Write high byte to destination register
 		{
 			sc_bv<8> highByte = reg_source->range(15,8);
-			dataBus_out.write(highByte);
+			dataBus.write(highByte);
 			execCount++;
 			break;}
 		case 15: //  reset control signals
@@ -3694,8 +3875,8 @@ private:
 
 		case 2:	// Write low byte to ZR
 			cout << "Write low byte of data form databus to register" << endl;
-			zr = (zr & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 3:	// Reset control signals and pc++
@@ -3713,8 +3894,8 @@ private:
 			execCount++;
 			break;
 		case 6:  // Write hi byte to zr
-			zr = (dataBus_in.read() << 8) | (zr & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+			zr = (read_databus_resolved() << 8) | (zr & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 7: // reset control signals and increment pc
@@ -3733,7 +3914,7 @@ private:
 			execCount++;
 			break;
 		case 10: //get data from Memory
-			dataBus_out.write(*reg_source);
+			dataBus.write(*reg_source);
 			execCount++;
 			break;
 		case 11: //  reset control signals
@@ -3766,8 +3947,8 @@ private:
 
 		case 2:	// Write low byte to ZR
 			cout << "Write low byte of data form databus to register" << endl;
-			zr = (zr & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 3:	// Reset control signals and pc++
@@ -3785,8 +3966,8 @@ private:
 			execCount++;
 			break;
 		case 6:  // Write hi byte to zr
-			zr = (dataBus_in.read() << 8) | (zr & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+			zr = (read_databus_resolved() << 8) | (zr & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 7: // reset control signals and increment pc
@@ -3806,8 +3987,8 @@ private:
 			execCount++;
 			break;
 		case 10: //get data from Memory
-			*reg_destination = dataBus_in.read();
-			std::cout << "Got byte " << dataBus_in.read() << std::endl;
+			*reg_destination = read_databus_resolved();
+			std::cout << "Got byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 11: //  reset control signals
@@ -3845,8 +4026,8 @@ private:
 		case 2:
 			// Write low byte to ZR
 			cout << "Write low byte of data form databus to register" << endl;
-			zr = (zr & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 3:
@@ -3866,8 +4047,8 @@ private:
 			execCount++;
 			break;
 		case 6:  // Write hi byte to zr
-			zr = (dataBus_in.read() << 8) | (zr & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+			zr = (read_databus_resolved() << 8) | (zr & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 7: // reset control signals and increment pc
@@ -3887,8 +4068,8 @@ private:
 			execCount++;
 			break;
 		case 10: //get data from Memory
-			*reg_destination = (*reg_destination & 0xff00) | (0x00FF & dataBus_in.read());
-			std::cout << "Got low byte " << dataBus_in.read() << std::endl;
+			*reg_destination = (*reg_destination & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 11: // increment zr and reset control signals
@@ -3908,8 +4089,8 @@ private:
 			execCount++;
 			break;
 		case 14:// Write high byte to destination register
-			*reg_destination = (dataBus_in.read() << 8) | (*reg_destination & 0x00FF);
-			std::cout << "Got hi byte " << dataBus_in.read() << std::endl;
+			*reg_destination = (read_databus_resolved() << 8) | (*reg_destination & 0x00FF);
+			std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
 			execCount++;
 			break;
 		case 15: //  reset control signals
@@ -3921,6 +4102,418 @@ private:
 		}
 
 		return ready;
+	}
+
+	bool call_label()
+	{
+
+		bool ready = false;
+
+
+		switch (execCount) {
+		// load register ZR
+		//-------------------------------------------------------------------------
+		case 0:
+			// Write address register to address bus
+			cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+			addressBus.write(pc);
+			execCount++;
+			break;
+
+		case 1:
+			//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 2:
+			// Write low byte to ZR
+			cout << "Write low byte of data form databus to register" << endl;
+			zr(7,0) = dataBus.read();
+			execCount++;
+			break;
+		case 3:
+			// Reset control signals and pc++
+			resetProcSignals();
+			pc = pc.to_uint() + 1;
+			execCount++;
+			break;
+		case 4:
+			// Write PC to address bus
+			cout << "WRITE low byte address PC = " << pc.to_uint() << " to AddressBus" << endl;
+			addressBus.write(pc);
+			execCount++;
+			break;
+		case 5:  // Set signals for read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+		case 6:  // Write hi byte to zr
+			cout << "WRITE high byte of databus to regiser" << endl;
+			zr(15,8) = dataBus.read();
+			execCount++;
+			break;
+		case 7: // reset control signals and increment pc
+			resetProcSignals();
+			pc = pc.to_uint() + 1;
+			execCount++;
+			break;
+
+
+			// push pc to stack
+			//-------------------------------------------------------------------------
+		case 8: // decrement stack pointer
+			sp = sp.to_uint() - 1;
+			execCount++;
+			break;
+
+		case 9:	// Write Stack Pointer register to address bus
+			cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+			addressBus.write(sp);
+			execCount++;
+			break;
+
+		case 10:	//Set control sigs for mem write
+			setProcSignals_mem_write();
+			execCount++;
+			break;
+
+		case 11:	// Write high byte to stack
+			cout << "Write high Byte of PC to databus " << endl;
+			dataBus.write(sc_lv<8>(pc.range(15,8)));
+			execCount++;
+			break;
+
+		case 12:	// Reset control signals and and decrement sp
+			resetProcSignals();
+			sp = sp.to_uint() - 1;
+			execCount++;
+			break;
+
+		case 13: // Set control sigs for mem write
+			setProcSignals_mem_write();
+			execCount++;
+			break;
+
+		case 14: // Write low byte of pc to stack
+		{cout << "Write low byte of pc to stack " << endl;
+		dataBus.write(sc_lv<8>(pc.range(7,0)));
+		execCount++; }
+		break;
+
+		case 15:	// Reset control signals and and copy zr to pc
+			pc = zr;
+			resetProcSignals();
+			execCount = 0;
+			ready = true;
+			break;
+		}
+
+
+		return ready;
+
+
+	}
+
+	bool ret()
+	{
+
+		bool ready = false;
+
+		switch (execCount) {
+
+		//-------------------------------------------------------------------------
+		case 0:	// Write Stack Pointer register to address bus
+			cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+			addressBus.write(sp);
+			execCount++;
+			break;
+
+		case 2:	//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 3:	// read PC low byte
+			pc(7,0) =  read_databus_resolved();
+			execCount++;
+			break;
+
+		case 4:	// Reset control signals and and invrement sp
+			resetProcSignals();
+			sp = sp.to_uint() + 1;
+			execCount++;
+			break;
+
+		case 5: // Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 6: // read PC high byte
+			pc(15,8) = read_databus_resolved();
+			execCount++;
+			break;
+
+		case 7:	// Reset control signals and and increment sp
+			resetProcSignals();
+			execCount++;
+			ready = true;
+			break;
+		}
+
+		return ready;
+	}
+
+
+	bool pop()
+	{
+		bool ready = false;
+
+		switch (execCount) {
+
+		//-------------------------------------------------------------------------
+		case 0:	// Write Stack Pointer register to address bus
+			cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+			addressBus.write(sp);
+			execCount++;
+			break;
+
+		case 2:	//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 3:	// read status flags
+		{
+			sc_bv<8> input_data = read_databus_resolved();
+
+			flag_s = input_data[0];
+			flag_pv =input_data[1];
+			flag_z = input_data[2];
+			flag_c = input_data[3];
+
+			execCount++;}
+		break;
+
+		case 4:	// Reset control signals and and invrement sp
+			resetProcSignals();
+			sp = sp.to_uint() + 1;
+			execCount++;
+			break;
+
+		case 5: // Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 6: // Read accu from mem
+			a = read_databus_resolved();
+			execCount++;
+			break;
+
+		case 7:	// Reset control signals and and increment sp
+			resetProcSignals();
+			sp = sp.to_uint() + 1;
+			execCount++;
+			ready = true;
+			break;
+		}
+
+
+		return ready;
+	}
+
+	bool push()
+	{
+		bool ready = false;
+
+		switch (execCount) {
+
+		//-------------------------------------------------------------------------
+		case 0: // decrement stack pointer
+			sp = sp.to_uint() - 1;
+			execCount++;
+			break;
+
+		case 1:	// Write Stack Pointer register to address bus
+			cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+			addressBus.write(sp);
+			execCount++;
+			break;
+
+		case 2:	//Set control sigs for mem write
+			setProcSignals_mem_write();
+			execCount++;
+			break;
+
+		case 3:	// Write Accu to mem
+			cout << "Write Accu to databus " << endl;
+			dataBus.write(a);
+			execCount++;
+			break;
+
+		case 4:	// Reset control signals and and decrement sp
+			resetProcSignals();
+			sp = sp.to_uint() - 1;
+			execCount++;
+			break;
+
+		case 5: // Set control sigs for mem read
+			setProcSignals_mem_write();
+			execCount++;
+			break;
+
+		case 6: // Write status Register to mem
+		{cout << "Write Status regs to databus " << endl;
+
+		sc_lv<8> output_data;
+		output_data[0] = flag_s;
+		output_data[1] = flag_pv;
+		output_data[2] = flag_z;
+		output_data[3] = flag_c;
+		output_data.range(7,4) = "0000";
+
+		dataBus.write(output_data);
+		execCount++; }
+		break;
+
+		case 7:	// Reset control signals and and decrement sp
+			resetProcSignals();
+			execCount++;
+			ready = true;
+			break;
+		}
+
+
+		return ready;
+	}
+
+	bool in_a_port()
+	{
+		bool ready = false;
+
+		switch (execCount) {
+		// load register ZR
+		//-------------------------------------------------------------------------
+		case 0:	// Write address register to address bus
+			cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+			addressBus.write(pc);
+			execCount++;
+			break;
+
+		case 1:	//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 2:	// Write low byte to ZR
+			cout << "Write low byte of data form databus to register" << endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
+			execCount++;
+			break;
+		case 3:	// Reset control signals and pc++
+			resetProcSignals();
+			pc = pc.to_uint() + 1;
+			execCount++;
+			break;
+
+			// copy data from io to register
+			//-----------------------------------------------------------------------------------------
+		case 4: // write address from zr to address bus
+			addressBus.write(zr);
+			execCount++;
+			break;
+		case 5:// Set control signals for read
+			setProcSignals_io_read();
+			execCount++;
+			break;
+		case 6: //get data from io
+			a = read_databus_resolved();
+			execCount++;
+			break;
+		case 7: //  reset control signals
+			resetProcSignals();
+			execCount = 0;
+			ready = true;
+			break;
+		}
+
+		return ready;
+	}
+
+	bool out_port_a()
+	{
+		bool ready = false;
+
+		switch (execCount) {
+		// load register ZR
+		//-------------------------------------------------------------------------
+		case 0:	// Write address register to address bus
+			cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+			addressBus.write(pc);
+			execCount++;
+			break;
+
+		case 1:	//Set control sigs for mem read
+			setProcSignals_mem_read();
+			execCount++;
+			break;
+
+		case 2:	// Write low byte to ZR
+			cout << "Write low byte of data form databus to register" << endl;
+			zr = (zr & 0xff00) | (0x00FF & read_databus_resolved());
+			std::cout << "Got low byte " << read_databus_resolved() << std::endl;
+			execCount++;
+			break;
+		case 3:	// Reset control signals and pc++
+			resetProcSignals();
+			pc = pc.to_uint() + 1;
+			execCount++;
+			break;
+
+			// copy data from io to register
+			//-----------------------------------------------------------------------------------------
+		case 4: // write address from zr to address bus
+			addressBus.write(zr);
+			execCount++;
+			break;
+		case 5:// Set control signals for read
+			setProcSignals_io_write();
+			execCount++;
+			break;
+		case 6: //get data from io
+			dataBus.write(a);
+			execCount++;
+			break;
+		case 7: //  reset control signals
+			resetProcSignals();
+			execCount = 0;
+			ready = true;
+			break;
+		}
+
+		return ready;
+	}
+
+
+	sc_bv<8> read_databus_resolved()
+	{
+		sc_bv<8> input_data_bv;
+		sc_lv<8> input_data_lv = dataBus.read();
+
+		if (input_data_lv == "zzzzzzzz" || input_data_lv == "xxxxxxxx")
+		{
+			cout << "Module Mc8 error reading dataBus : undefined value" << endl;
+			input_data_bv = "00000000";
+		}
+		else
+		{
+			input_data_bv = input_data_lv.to_uint();
+		}
+
+		return input_data_bv;
 	}
 }
 ;
