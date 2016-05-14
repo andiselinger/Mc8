@@ -31,8 +31,9 @@ public:
 		for (int i = 0; i < RAM_SIZE; i++)
 		{
 			if (data[i])
-				cout << "Initialize RAM Address " << i << " with " << (int) data[i]
-						<< endl;
+				cout << "Initialize RAM Address 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << i << " with 0x" << std::setw (2)
+						<< (int) data[i] << endl;
 			memory[i] = data[i];
 		}
 
@@ -51,15 +52,10 @@ public:
 		 memory[i]=val;
 		 }
 
-
-
 		 }else
 		 {
 		 cout << " file error : memory not initialized" << endl;
 		 }
-
-
-
 
 		 memory[0x0000] = 0x3A; // test MOV A,label
 		 memory[0x0001] = 0x01;

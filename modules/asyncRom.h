@@ -25,8 +25,9 @@ public:
 		for (int i = 0; i < ROM_SIZE; i++)
 		{
 			if (data[i])
-				cout << "Initialize ROM Address : " << i << " with: " << (int) data[i]
-						<< endl;
+				cout << "Initialize ROM Address 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << i << " with 0x" << std::setw (2)
+						<< (int) data[i] << endl;
 			memory[i] = data[i];
 		}
 
