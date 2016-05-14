@@ -1,5 +1,7 @@
 #include "systemc.h"
 
+extern sc_trace_file *fp;  // Trace file from main.cpp
+
 typedef enum state_e
 {
 	FETCH_INSTR, FETCH_TWO_BYTE_ADDRESS, DECODE, EXECUTE, HALT
@@ -82,6 +84,11 @@ public:
 	mc8 (sc_module_name name) :
 			sc_module (name)
 	{
+		sc_trace (fp, alu1, "alu1");
+		sc_trace (fp, a, "A");
+		sc_trace (fp, b, "B");
+		sc_trace (fp, c, "C");
+		// ... add anything you like
 		/*
 		 myWriter->registerBool("CLK");
 		 myWriter->registerBool("RES");
@@ -113,8 +120,8 @@ public:
 		resetRegAndInternals ();
 		SC_METHOD(ProcCycle);
 		sensitive << clk.pos () << res;
-		SC_METHOD(traceIt);
-		sensitive << tclk.pos ();
+		//SC_METHOD(traceIt);
+		//sensitive << tclk.pos ();
 
 		dont_initialize ();
 	}
@@ -151,7 +158,8 @@ private:
 							break;
 						case READ_TO_INSTR_REG:
 							ir = read_databus_resolved ();
-							std::cout << "Got instruction " << ir.to_uint () << std::endl;
+							std::cout << "Got instruction 0x" << std::hex << std::setw (2)
+									<< ir.to_uint () << std::endl;
 							fetchState = RESET_CONTROL_SIG;
 							break;
 						case RESET_CONTROL_SIG:
@@ -272,6 +280,8 @@ private:
 								case 2:
 									// Read dat_8 to A
 									a = read_databus_resolved ();
+									std::cout << "Read dat_8 and copy to A "
+											<< read_databus_resolved () << std::endl;
 									execCount++;
 									break;
 								case 3:
@@ -289,6 +299,7 @@ private:
 									break;
 							}
 							break; // MOV A,dat_8
+
 						case 0x06:
 							// MOV B,dat_8
 							switch (execCount)
@@ -350,7 +361,7 @@ private:
 								case 2:
 									// Read dat_8 to C
 									c = read_databus_resolved ();
-									std::cout << "Read dat_8 and copy to c "
+									std::cout << "Read dat_8 and copy to C "
 											<< read_databus_resolved () << std::endl;
 									execCount++;
 									break;
@@ -703,14 +714,12 @@ private:
 									twoByteInstrB1 = 0;
 								}
 							}
-
 							break;
 
 							// Registerindirekte Adressierung
 							//---------------------------------------------------------------------------------------
 
 						case 0x7D: // MOV A,[HL]
-
 							if (execCount == 0)
 								std::cout << "EXECUTE  MOV A, [HL] ... [START]" << std::endl;
 
@@ -721,7 +730,6 @@ private:
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
 							}
-
 							break;
 
 						case 0x77: // MOV [HL],A
@@ -736,7 +744,6 @@ private:
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
 							}
-
 							break;
 
 							// Stackbefehle
@@ -771,26 +778,26 @@ private:
 							// Ein-Ausgabebefehle
 							//---------------------------------------------------------------------------------------
 
-						case 0xDB: // IN A,port
+						case 0xDB: // IN A, port
 							if (execCount == 0)
-								std::cout << "EXECUTE  IN A,port ... [START]" << std::endl;
+								std::cout << "EXECUTE  IN A, port ... [START]" << std::endl;
 
 							if (in_a_port ())
 							{
-								std::cout << "EXECUTE  IN A,port ... [END]" << std::endl;
+								std::cout << "EXECUTE  IN A, port ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
 							}
 							break;
 
-						case 0xD3: // OUT port,A
+						case 0xD3: // OUT port, A
 							if (execCount == 0)
-								std::cout << "EXECUTE  OUT port,A ... [START]" << std::endl;
+								std::cout << "EXECUTE  OUT port, A ... [START]" << std::endl;
 
 							if (out_port_a ())
 							{
-								std::cout << "EXECUTE  OUT port,A ... [END]" << std::endl;
+								std::cout << "EXECUTE  OUT port, A ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -1157,9 +1164,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ADD A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1200,9 +1206,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ADD B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1243,9 +1248,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ADD C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1304,9 +1308,8 @@ private:
 									mreq.write (true);
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ADD dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1347,9 +1350,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE SUB A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1390,9 +1392,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE SUB B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1433,9 +1434,8 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE SUB C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1494,9 +1494,8 @@ private:
 									mreq.write (true);
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE SUB dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1538,9 +1537,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE AND A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1581,9 +1579,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE AND B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1624,9 +1621,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE AND C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1685,9 +1681,9 @@ private:
 									mreq.write (true);
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
+									printFlags ();
 									std::cout << "EXECUTE AND dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1728,9 +1724,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE OR A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1771,9 +1766,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE OR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1814,9 +1808,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE OR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1875,9 +1868,8 @@ private:
 									mreq.write (true);
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE OR dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1918,9 +1910,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE XOR A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -1961,9 +1952,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE XOR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2004,9 +1994,8 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE XOR C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2065,9 +2054,8 @@ private:
 									mreq.write (true);
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE XOR dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2108,10 +2096,8 @@ private:
 									case 3:
 										// Set result
 										a = aluRes;
-										std::cout << "New Value in A: " << a << std::endl;
-										std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-												<< " pv = " << flag_pv << " s = " << flag_s
-												<< std::endl;
+										printA ();
+										printFlags ();
 										std::cout << "EXECUTE SHL ... [END] " << std::endl;
 										execCount = 0;
 										twoByteInstrB1 = 0;
@@ -2152,10 +2138,8 @@ private:
 									case 3:
 										// Set result
 										a = aluRes;
-										std::cout << "New Value in A: " << a << std::endl;
-										std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-												<< " pv = " << flag_pv << " s = " << flag_s
-												<< std::endl;
+										printA ();
+										printFlags ();
 										std::cout << "EXECUTE SHR ... [END] " << std::endl;
 										execCount = 0;
 										twoByteInstrB1 = 0;
@@ -2191,9 +2175,8 @@ private:
 								case 3:
 									// Set result
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE RCL ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
@@ -2230,9 +2213,8 @@ private:
 								case 3:
 									// Set result
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ROL ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
@@ -2267,9 +2249,8 @@ private:
 								case 3:
 									// Set result
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE RCR ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
@@ -2306,9 +2287,8 @@ private:
 								case 3:
 									// Set result
 									a = aluRes;
-									std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printA ();
+									printFlags ();
 									std::cout << "EXECUTE ROR ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
@@ -2350,8 +2330,7 @@ private:
 									flag_s = tempFlags[3];
 									//a = aluRes;  // Do not save the result
 									//std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printFlags ();
 									std::cout << "EXECUTE CP A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2393,8 +2372,7 @@ private:
 									flag_s = tempFlags[3];
 									// a = aluRes;  // Do not save the result
 									// std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printFlags ();
 									std::cout << "EXECUTE CP B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2436,8 +2414,7 @@ private:
 									flag_s = tempFlags[3];
 									//a = aluRes;  // Do not save the result
 									//std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printFlags ();
 									std::cout << "EXECUTE CP C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2497,8 +2474,7 @@ private:
 									iorq.write (true);
 									pc = pc.to_uint () + 1;
 									//std::cout << "New Value in A: " << a << std::endl;
-									std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z
-											<< " pv = " << flag_pv << " s = " << flag_s << std::endl;
+									printFlags ();
 									std::cout << "EXECUTE CP dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
@@ -2619,7 +2595,6 @@ private:
 					break;
 			}
 		}
-
 	}
 	// Addition of two bitvectors
 	sc_bv<8>
@@ -2716,6 +2691,18 @@ private:
 		 myWriter->traceWire8((unsigned int) state, "Proc_State",
 		 sc_time_stamp().to_seconds());
 		 */
+	}
+	void
+	printA ()
+	{
+		std::cout << "New Value in A: 0x" << std::hex << std::setw (2)
+				<< std::setfill ('0') << a << std::endl;
+	}
+	void
+	printFlags ()
+	{
+		std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z << " pv = "
+				<< flag_pv << " s = " << flag_s << std::endl;
 	}
 
 	void
@@ -2903,7 +2890,6 @@ private:
 					state = EXECUTE;
 					twoByteInstrB1 = 0;
 				}
-
 				break;
 
 			case 0x22:
@@ -2913,7 +2899,6 @@ private:
 					//MOV label,IX
 					std::cout << "Instruction -- MOV label, IX" << std::endl;
 					state = EXECUTE;
-
 				}
 				else
 				{
@@ -2922,7 +2907,6 @@ private:
 					state = EXECUTE;
 					twoByteInstrB1 = 0;
 				}
-
 				break;
 
 				// Registerindirekte Adressierung
@@ -4448,19 +4432,19 @@ private:
 		{
 			// load register ZR
 			//-------------------------------------------------------------------------
-			case 0:	// Write address register to address bus
+			case 0:  // Write address register to address bus
 				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
 
-			case 1:	//Set control sigs for mem read
+			case 1:  //Set control sigs for mem read
 				setProcSignals_mem_read ();
 				execCount++;
 				break;
 
-			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+			case 2:  // Write low byte to ZR
+				cout << "Write low byte of data from databus to register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
 				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
 				execCount++;
@@ -4473,25 +4457,24 @@ private:
 
 				// copy data from io to register
 				//-----------------------------------------------------------------------------------------
-			case 4: // write address from zr to address bus
+			case 4:  // write address from zr to address bus
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 5: // Set control signals for read
+			case 5:  // Set control signals for read
 				setProcSignals_io_read ();
 				execCount++;
 				break;
-			case 6: //get data from io
+			case 6:  //get data from io
 				a = read_databus_resolved ();
 				execCount++;
 				break;
-			case 7: //  reset control signals
+			case 7:  // reset control signals
 				resetProcSignals ();
 				execCount = 0;
 				ready = true;
 				break;
 		}
-
 		return ready;
 	}
 
@@ -4516,7 +4499,7 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte of data from databus to register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
 				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
 				execCount++;
@@ -4559,8 +4542,9 @@ private:
 
 		if (input_data_lv == "zzzzzzzz" || input_data_lv == "xxxxxxxx")
 		{
-			cout << "Module Mc8 error reading dataBus : undefined value" << endl;
+			cout << "Module Mc8: Error reading dataBus : undefined value" << endl;
 			input_data_bv = "00000000";
+			exit (-1);
 		}
 		else
 		{

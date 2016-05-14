@@ -30,7 +30,7 @@ public:
 			sc_module (nm), port_address (address_), io (io_)
 	{
 		// configure if input or output
-		// io = 1 input io = 0 output
+		// true: input, false: output
 
 		if (io)
 		{
@@ -55,7 +55,6 @@ private:
 		while (1)
 		{
 			wait (rd.negedge_event ());
-
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
 			if (io_addr == port_address)
@@ -69,7 +68,6 @@ private:
 		while (1)
 		{
 			wait (rd.negedge_event ());
-
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
 			if (io_addr == port_address)
@@ -81,7 +79,6 @@ private:
 	weak ()
 	{
 		// if there is no reading of the io set the data Output to all z
-
 		while (1)
 		{
 			wait (rd.posedge_event ());

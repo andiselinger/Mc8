@@ -4,8 +4,10 @@
 #include "systemc.h"
 
 //#include "SESYD.hpp"
-
 //LibSESYD::FileWriter *myWriter;
+
+sc_trace_file *fp;  // Trace file
+
 #include "clkResGen.h"
 #include "asyncRom.h"
 #include "asyncRam.h"
@@ -24,7 +26,7 @@ sc_main (int argc, char* argv[])
 
 	if (argc < 2)
 	{
-		std::cout << "Please specify .hex file as parameter!" << std::endl;
+		std::cout << "Please specify hex file as parameter!" << std::endl;
 		return -1;
 	}
 
@@ -36,19 +38,18 @@ sc_main (int argc, char* argv[])
 
 	if (hf->copy_data_to_memory (mem, ADDRESSABLE_AREA) != 0)
 	{
-		cout << "error hexfile  " << endl;
+		cout << "Error with hexfile!" << endl;
 		return -1;
 	}
 
 	unsigned char *rom_data = mem;
-	unsigned char *ram_data = (mem + RAM_START);
+	unsigned char *ram_data = mem + RAM_START;
 
 	/*
 	 initSesydFramework();
-
 	 myWriter = new FileWriter();
-
 	 */
+
 	sc_signal<bool> sig_clk;
 	sc_signal<bool> sig_tclk;
 	sc_signal<bool> sig_res;
@@ -73,6 +74,10 @@ sc_main (int argc, char* argv[])
 	sc_signal_rv<8> sig_dataBus;
 	sc_signal_rv<8> connect;
 
+	// Create trace file
+	fp = sc_create_vcd_trace_file ("wave");
+	fp->set_time_unit(10, SC_NS);
+
 	// Components
 	clkResGen crg ("CLKRES");
 	crg.clk (sig_clk);
@@ -90,8 +95,8 @@ sc_main (int argc, char* argv[])
 	myMC8.dataBus (sig_dataBus);
 	myMC8.addressBus (sig_addressBus_cpu);
 
-	// constructor needs Name, Address, bool input or putput
-	asyncIO io1 ("io1", 0x1, true);
+	// constructor needs name, address, bool input or output
+	asyncIO io1 ("io1", 0x00, false);  // true: input, false: output
 	io1.addrBus (sig_addressBus_mem);
 	io1.dataBus (sig_dataBus);
 	io1.wr (sig_wr_io);
@@ -124,15 +129,13 @@ sc_main (int argc, char* argv[])
 	myAddressDecoder.WR_io (sig_wr_io);
 	myAddressDecoder.RD_io (sig_rd_io);
 
-	//	sc_trace_file *fp;
-	//	fp=sc_create_vcd_trace_file("wave");
 	//
-	//	sc_trace(fp,sig_clk,"clk");
-	//	sc_trace(fp,sig_res,"res");
-	//	sc_trace(fp,sig_wr,"wr");
-	//	sc_trace(fp,sig_rd,"rd");
-	//	sc_trace(fp,sig_mreq,"mreq");
-	//	sc_trace(fp,sig_iorq,"iorq");
+	sc_trace(fp,sig_clk,"clk");
+	sc_trace(fp,sig_res,"res");
+	sc_trace(fp,sig_wr,"wr");
+	sc_trace(fp,sig_rd,"rd");
+	sc_trace(fp,sig_mreq,"mreq");
+	sc_trace(fp,sig_iorq,"iorq");
 	//	sc_trace(fp,sig_dataBus,"dataBus");
 	//	sc_trace(fp,sig_addressBus,"addressBus");
 
@@ -141,7 +144,7 @@ sc_main (int argc, char* argv[])
 	sc_start (200, SC_MS);	// run the simulation for 100 µ-sec
 
 	//myWriter->closeFile();
-	//sc_close_vcd_trace_file(fp);
+	sc_close_vcd_trace_file(fp);
 
 	delete[] mem;
 	return 0;

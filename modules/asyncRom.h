@@ -15,7 +15,6 @@ public:
 	{
 		SC_THREAD(readData);
 		SC_THREAD(weak);
-
 	}
 
 	void
@@ -59,8 +58,10 @@ private:
 			wait (rd.negedge_event ());
 			addressToRead = addrBus.read ().to_uint ();
 			wait (ROM_READ_DELAY_US, SC_NS);
+#ifdef TEST
 			cout << "ROM here, reading Data: " << memory[addressToRead]
 					<< " from Address :" << addressToRead << endl;
+#endif
 			dataBus.write (memory[addressToRead]);
 		}
 	}
@@ -68,7 +69,6 @@ private:
 	void
 	weak ()
 	{
-
 		while (1)
 		{
 			wait (rd.posedge_event ());

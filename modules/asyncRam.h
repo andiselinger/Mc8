@@ -1,5 +1,4 @@
 #include "systemc.h"
-//#include "cintelhex.h"
 #include "global_definitions.h"
 #include <cstdio>
 
@@ -51,7 +50,6 @@ public:
 
 		 memory[i]=val;
 		 }
-
 		 }else
 		 {
 		 cout << " file error : memory not initialized" << endl;
@@ -85,19 +83,18 @@ private:
 		while (1)
 		{
 			wait (rd.negedge_event ());
-
 			if (!busy)
 			{
-
 				busy = true;
 				address = addrBus.read ().to_uint ();
 				wait (RAM_READ_DELAY_NS, SC_NS);
 				dataBus.write (memory[address]);
+#ifdef TEST
 				cout << "RAM here, reading Data: " << memory[address]
 						<< " from Address :" << address << endl;
+#endif
 				busy = false;
 			}
-
 		}
 	}
 
@@ -107,18 +104,17 @@ private:
 		while (1)
 		{
 			wait (wr.negedge_event ());
-
 			dataBus.write ("zzzzzzzz");
-
 			if (!busy)
 			{
-
 				busy = true;
 				address = addrBus.read ().to_uint ();
 				wait (RAM_WRITE_DELAY_NS, SC_NS);
 				memory[address] = dataBus.read ();
+#ifdef TEST
 				cout << "RAM here, writing Data: " << memory[address] << " to Address :"
-						<< address << endl;
+				<< address << endl;
+#endif
 				busy = false;
 			}
 		}
