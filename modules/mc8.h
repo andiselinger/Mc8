@@ -147,8 +147,8 @@ private:
 					{
 						case SET_ADDRESS:
 							std::cout << "FETCH INSTRUCTION ... [START] " << std::endl;
-							std::cout << "Will fetch instruction at address " << pc.to_uint ()
-									<< std::endl;
+							std::cout << "Will fetch instruction at address 0x" << std::hex
+									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchState = SET_CONTROL_SIG;
 							break;
@@ -180,19 +180,19 @@ private:
 					{
 						case SET_ADDRESS_LO:
 							std::cout << "FETCH TWO BYTE ADDRESS ... [START] " << std::endl;
-							std::cout << "Will fetch label low byte at address "
-									<< pc.to_uint () << std::endl;
+							std::cout << "Will fetch label low byte at address 0x" << std::hex
+									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchInstrState = SET_CONTROL_SIG_LO;
 							break;
 						case SET_CONTROL_SIG_LO:
-							setControlSignals_mem_read ();
+							setProcSignals_mem_read ();
 							fetchInstrState = READ_TO_ZR_LO;
 							break;
 						case READ_TO_ZR_LO:
 							zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-							std::cout << "Got low byte " << read_databus_resolved ()
-									<< std::endl;
+							std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+									<< read_databus_resolved ().to_uint () << std::endl;
 							fetchInstrState = RESET_CONTROL_SIG_LO;
 							break;
 						case RESET_CONTROL_SIG_LO:
@@ -201,19 +201,19 @@ private:
 							fetchInstrState = SET_ADDRESS_HI;
 							break;
 						case SET_ADDRESS_HI:
-							std::cout << "Will fetch label hi byte at address "
-									<< pc.to_uint () << std::endl;
+							std::cout << "Will fetch label hi byte at address 0x" << std::hex
+									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchInstrState = SET_CONTROL_SIG_HI;
 							break;
 						case SET_CONTROL_SIG_HI:
-							setControlSignals_mem_read ();
+							setProcSignals_mem_read ();
 							fetchInstrState = READ_TO_ZR_HI;
 							break;
 						case READ_TO_ZR_HI:
 							zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-							std::cout << "Got hi byte " << read_databus_resolved ()
-									<< std::endl;
+							std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+									<< read_databus_resolved ().to_uint () << std::endl;
 							fetchInstrState = RESET_CONTROL_SIG_HI;
 							break;
 						case RESET_CONTROL_SIG_HI:
@@ -259,7 +259,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -294,7 +294,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -328,7 +328,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -397,7 +397,7 @@ private:
 										break;
 									case 1:
 										// Set control sigs for mem read
-										setControlSignals_mem_read ();
+										setProcSignals_mem_read ();
 										execCount++;
 										break;
 									case 2:
@@ -421,7 +421,7 @@ private:
 										execCount++;
 										break;
 									case 5:  // Set signals for second read
-										setControlSignals_mem_read ();
+										setProcSignals_mem_read ();
 										execCount++;
 										break;
 									case 6:  // Write hi byte to IX
@@ -453,7 +453,7 @@ private:
 										break;
 									case 1:
 										// Set control sigs for mem read
-										setControlSignals_mem_read ();
+										setProcSignals_mem_read ();
 										execCount++;
 										break;
 									case 2:
@@ -477,7 +477,7 @@ private:
 										execCount++;
 										break;
 									case 5:  // Set signals for read
-										setControlSignals_mem_read ();
+										setProcSignals_mem_read ();
 										execCount++;
 										break;
 									case 6:  // Write hi byte to HL
@@ -510,7 +510,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -534,7 +534,7 @@ private:
 									execCount++;
 									break;
 								case 5:  // Set signals for read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 6:  // Write hi byte to SP
@@ -1212,7 +1212,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1392,7 +1392,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1573,7 +1573,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1754,7 +1754,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1934,7 +1934,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -2347,7 +2347,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									setControlSignals_mem_read ();
+									setProcSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -2385,8 +2385,16 @@ private:
 						case 0xC2:
 							// JPNZ label
 							std::cout << "EXECUTE JPNZ label ... [START] " << std::endl;
-							if (flag_z == true)
+							if (flag_z == false)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPNZ label ... [END] " << std::endl;
 							break;
@@ -2394,8 +2402,16 @@ private:
 						case 0xCA:
 							// JPZ label
 							std::cout << "EXECUTE JPZ label ... [START] " << std::endl;
-							if (flag_z == false)
+							if (flag_z == true)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPZ label ... [END] " << std::endl;
 							break;
@@ -2403,8 +2419,16 @@ private:
 						case 0xD2:
 							// JPNC label
 							std::cout << "EXECUTE JPNC label ... [START] " << std::endl;
-							if (flag_c == true)
+							if (flag_c == false)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPNC label ... [END] " << std::endl;
 							break;
@@ -2412,8 +2436,17 @@ private:
 						case 0xDA:
 							// JPC label
 							std::cout << "EXECUTE JPC label ... [START] " << std::endl;
-							if (flag_c == false)
+							if (flag_c == true)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPC label ... [END] " << std::endl;
 							break;
@@ -2421,8 +2454,16 @@ private:
 						case 0xE2:
 							// JPNO label
 							std::cout << "EXECUTE JPNO label ... [START] " << std::endl;
-							if (flag_pv == true)
+							if (flag_pv == false)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPNO label ... [END] " << std::endl;
 							break;
@@ -2430,8 +2471,16 @@ private:
 						case 0xEA:
 							// JPO label
 							std::cout << "EXECUTE JPO label ... [START] " << std::endl;
-							if (flag_pv == false)
+							if (flag_pv == true)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPO label ... [END] " << std::endl;
 							break;
@@ -2439,8 +2488,16 @@ private:
 						case 0xF2:
 							// JPNS label
 							std::cout << "EXECUTE JPNS label ... [START] " << std::endl;
-							if (flag_s == true)
+							if (flag_s == false)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPNS label ... [END] " << std::endl;
 							break;
@@ -2448,8 +2505,16 @@ private:
 						case 0xFA:
 							// JPS label
 							std::cout << "EXECUTE JPS label ... [START] " << std::endl;
-							if (flag_s == false)
+							if (flag_s == true)
+							{
 								pc = zr;
+								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+										<< pc.to_uint () << std::endl;
+							}
+							else
+							{
+								std::cout << "Don't jump" << std::endl;
+							}
 							state = FETCH_INSTR;
 							std::cout << "EXECUTE JPS label ... [END] " << std::endl;
 							break;
@@ -2611,14 +2676,6 @@ private:
 		mreq.write (true);
 		iorq.write (true);
 	}
-	void
-	setControlSignals_mem_read ()
-	{
-		wr.write (true);
-		rd.write (false);
-		mreq.write (false);
-		iorq.write (true);
-	}
 
 	void
 	resetProcSignals ()
@@ -2675,7 +2732,7 @@ private:
 	{
 		// Reset Prog counter
 		pc = 0x0000;
-		zr = 0xFFFF;
+		zr = 0x0000;
 		ix = 0x0000;
 		hl = 0x0000;
 		a = 0x00;
@@ -3202,7 +3259,7 @@ private:
 				}
 				break;
 
-				// CPU Steuerbefehele
+				// CPU Steuerbefehle
 			case 0x00:
 				std::cout << "Instruction -- NOP" << std::endl;
 				state = EXECUTE;
@@ -3698,7 +3755,7 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
 				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
@@ -3802,7 +3859,7 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
 				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
@@ -3967,7 +4024,7 @@ private:
 
 			case 2:
 				// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
 				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
@@ -4080,7 +4137,7 @@ private:
 
 			case 2:
 				// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte of data to ZR register" << endl;
 				zr (7, 0) = dataBus.read ();
 				execCount++;
 				break;
