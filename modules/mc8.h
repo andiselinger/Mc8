@@ -1,4 +1,5 @@
 #include "systemc.h"
+#include <string>
 
 extern sc_trace_file *fp;  // Trace file from main.cpp
 
@@ -84,11 +85,11 @@ public:
 	mc8 (sc_module_name name) :
 			sc_module (name)
 	{
-		sc_trace (fp, alu1, "alu1");
-		sc_trace (fp, a, "A");
-		sc_trace (fp, b, "B");
-		sc_trace (fp, c, "C");
-		// ... add anything you like
+		sc_trace (fp, alu1, "alu1_" + (std::string) name); // Add name if you want to use multiple processors
+		sc_trace (fp, a, "A_" + (std::string) name);
+		sc_trace (fp, b, "B_" + (std::string) name);
+		sc_trace (fp, c, "C_" + (std::string) name);
+		// ... add any signals you like
 		/*
 		 myWriter->registerBool("CLK");
 		 myWriter->registerBool("RES");
@@ -122,8 +123,7 @@ public:
 		sensitive << clk.pos () << res;
 		//SC_METHOD(traceIt);
 		//sensitive << tclk.pos ();
-
-		dont_initialize ();
+		//dont_initialize ();
 	}
 
 private:
@@ -186,10 +186,7 @@ private:
 							fetchInstrState = SET_CONTROL_SIG_LO;
 							break;
 						case SET_CONTROL_SIG_LO:
-							wr.write (true);
-							rd.write (false);
-							mreq.write (false);
-							iorq.write (true);
+							setControlSignals_mem_read ();
 							fetchInstrState = READ_TO_ZR_LO;
 							break;
 						case READ_TO_ZR_LO:
@@ -199,10 +196,7 @@ private:
 							fetchInstrState = RESET_CONTROL_SIG_LO;
 							break;
 						case RESET_CONTROL_SIG_LO:
-							wr.write (true);
-							rd.write (true);
-							mreq.write (true);
-							iorq.write (true);
+							resetControlSignals ();
 							pc = pc.to_uint () + 1;
 							fetchInstrState = SET_ADDRESS_HI;
 							break;
@@ -213,10 +207,7 @@ private:
 							fetchInstrState = SET_CONTROL_SIG_HI;
 							break;
 						case SET_CONTROL_SIG_HI:
-							wr.write (true);
-							rd.write (false);
-							mreq.write (false);
-							iorq.write (true);
+							setControlSignals_mem_read ();
 							fetchInstrState = READ_TO_ZR_HI;
 							break;
 						case READ_TO_ZR_HI:
@@ -226,10 +217,7 @@ private:
 							fetchInstrState = RESET_CONTROL_SIG_HI;
 							break;
 						case RESET_CONTROL_SIG_HI:
-							wr.write (true);
-							rd.write (true);
-							mreq.write (true);
-							iorq.write (true);
+							resetControlSignals ();
 							pc = pc.to_uint () + 1;
 							fetchInstrState = SET_ADDRESS_LO;
 							state = EXECUTE;
@@ -271,10 +259,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -286,10 +271,7 @@ private:
 									break;
 								case 3:
 									// Reset control signals
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									std::cout << "EXECUTE MOV A,dat_8 ... [END] " << std::endl;
 									execCount = 0;
@@ -312,10 +294,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -327,10 +306,7 @@ private:
 									break;
 								case 3:
 									// Reset control signals
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									std::cout << "EXECUTE MOV B,dat_8 ... [END] " << std::endl;
 									execCount = 0;
@@ -352,10 +328,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -367,10 +340,7 @@ private:
 									break;
 								case 3:
 									// Reset control signals
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									std::cout << "EXECUTE MOV C,dat_8 ... [END] " << std::endl;
 									execCount = 0;
@@ -427,10 +397,7 @@ private:
 										break;
 									case 1:
 										// Set control sigs for mem read
-										wr.write (true);
-										rd.write (false);
-										mreq.write (false);
-										iorq.write (true);
+										setControlSignals_mem_read ();
 										execCount++;
 										break;
 									case 2:
@@ -442,10 +409,7 @@ private:
 										break;
 									case 3:
 										// Reset control signals and pc++
-										wr.write (true);
-										rd.write (true);
-										mreq.write (true);
-										iorq.write (true);
+										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount++;
 										break;
@@ -457,10 +421,7 @@ private:
 										execCount++;
 										break;
 									case 5:  // Set signals for second read
-										wr.write (true);
-										rd.write (false);
-										mreq.write (false);
-										iorq.write (true);
+										setControlSignals_mem_read ();
 										execCount++;
 										break;
 									case 6:  // Write hi byte to IX
@@ -470,10 +431,7 @@ private:
 										execCount++;
 										break;
 									case 7:
-										wr.write (true);
-										rd.write (true);
-										mreq.write (true);
-										iorq.write (true);
+										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount = 0;
 										std::cout << "EXECUTE  MOV IX, dat_16 ... [END]"
@@ -495,10 +453,7 @@ private:
 										break;
 									case 1:
 										// Set control sigs for mem read
-										wr.write (true);
-										rd.write (false);
-										mreq.write (false);
-										iorq.write (true);
+										setControlSignals_mem_read ();
 										execCount++;
 										break;
 									case 2:
@@ -510,10 +465,7 @@ private:
 										break;
 									case 3:
 										// Reset control signals and pc++
-										wr.write (true);
-										rd.write (true);
-										mreq.write (true);
-										iorq.write (true);
+										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount++;
 										break;
@@ -525,10 +477,7 @@ private:
 										execCount++;
 										break;
 									case 5:  // Set signals for read
-										wr.write (true);
-										rd.write (false);
-										mreq.write (false);
-										iorq.write (true);
+										setControlSignals_mem_read ();
 										execCount++;
 										break;
 									case 6:  // Write hi byte to HL
@@ -538,10 +487,7 @@ private:
 										execCount++;
 										break;
 									case 7:
-										wr.write (true);
-										rd.write (true);
-										mreq.write (true);
-										iorq.write (true);
+										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount = 0;
 										std::cout << "EXECUTE  MOV HL, dat_16 ... [END]"
@@ -564,10 +510,7 @@ private:
 									break;
 								case 1:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 2:
@@ -579,10 +522,7 @@ private:
 									break;
 								case 3:
 									// Reset control signals and pc++
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									execCount++;
 									break;
@@ -594,10 +534,7 @@ private:
 									execCount++;
 									break;
 								case 5:  // Set signals for read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 6:  // Write hi byte to SP
@@ -607,10 +544,7 @@ private:
 									execCount++;
 									break;
 								case 7:
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									execCount = 0;
 									std::cout << "EXECUTE  MOV SP, dat_16 ... [END]" << std::endl;
@@ -719,7 +653,7 @@ private:
 							// Registerindirekte Adressierung
 							//---------------------------------------------------------------------------------------
 
-						case 0x7D: // MOV A,[HL]
+						case 0x7E: // MOV A,[HL]
 							if (execCount == 0)
 								std::cout << "EXECUTE  MOV A, [HL] ... [START]" << std::endl;
 
@@ -1278,10 +1212,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1303,10 +1234,7 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;			// Store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
@@ -1464,10 +1392,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1489,10 +1414,7 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									a = aluRes;    // Store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
@@ -1651,10 +1573,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1676,10 +1595,7 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;			// Store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
@@ -1838,10 +1754,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -1863,10 +1776,7 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;    // Store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
@@ -2024,10 +1934,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -2049,10 +1956,7 @@ private:
 									flag_pv = parity (aluRes);
 									flag_s = aluRes[7];
 									a = aluRes;     // Store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
@@ -2443,10 +2347,7 @@ private:
 									break;
 								case 2:
 									// Set control sigs for mem read
-									wr.write (true);
-									rd.write (false);
-									mreq.write (false);
-									iorq.write (true);
+									setControlSignals_mem_read ();
 									execCount++;
 									break;
 								case 3:
@@ -2468,10 +2369,7 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									//a = aluRes;    // Do not store result
-									wr.write (true);
-									rd.write (true);
-									mreq.write (true);
-									iorq.write (true);
+									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									//std::cout << "New Value in A: " << a << std::endl;
 									printFlags ();
@@ -2706,6 +2604,23 @@ private:
 	}
 
 	void
+	resetControlSignals ()
+	{
+		wr.write (true);
+		rd.write (true);
+		mreq.write (true);
+		iorq.write (true);
+	}
+	void
+	setControlSignals_mem_read ()
+	{
+		wr.write (true);
+		rd.write (false);
+		mreq.write (false);
+		iorq.write (true);
+	}
+
+	void
 	resetProcSignals ()
 	{
 
@@ -2729,9 +2644,7 @@ private:
 	setProcSignals_mem_read ()
 	{
 		// write all z to databus for resolved bus
-
 		dataBus.write ("zzzzzzzz");
-
 		wr.write (true);
 		rd.write (false);
 		mreq.write (false);
@@ -2742,7 +2655,6 @@ private:
 	setProcSignals_io_read ()
 	{
 		dataBus.write ("zzzzzzzz");
-
 		wr.write (true);
 		rd.write (false);
 		mreq.write (true);
@@ -2912,7 +2824,7 @@ private:
 				// Registerindirekte Adressierung
 				//---------------------------------------------------------------------------------------
 
-			case 0x7D: // MOV A,[HL]
+			case 0x7E: // MOV A,[HL]
 				std::cout << "Instruction -- MOV A,[HL]" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
@@ -3760,9 +3672,7 @@ private:
 				execCount = 0;
 				ready = true;
 				break;
-
 		}
-
 		return ready;
 	}
 
@@ -3776,7 +3686,8 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3789,7 +3700,8 @@ private:
 			case 2:	// Write low byte to ZR
 				cout << "Write low byte of data form databus to register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
@@ -3798,8 +3710,8 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE low byte address PC = " << pc.to_uint ()
-						<< " to AddressBus" << endl;
+				cout << "WRITE address PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3809,7 +3721,8 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
 			case 7: // reset control signals and increment pc
@@ -3864,24 +3777,21 @@ private:
 				execCount = 0;
 				ready = true;
 				break;
-
 		}
-
 		return ready;
-
 	}
 
 	bool
 	mov_label_register (sc_bv<8> *reg_source)
 	{
 		bool ready = false;
-
 		switch (execCount)
 		{
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3894,7 +3804,9 @@ private:
 			case 2:	// Write low byte to ZR
 				cout << "Write low byte of data form databus to register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< std::endl;
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
@@ -3903,8 +3815,8 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE low byte address PC = " << pc.to_uint ()
-						<< " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3914,7 +3826,9 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< std::endl;
 				execCount++;
 				break;
 			case 7: // reset control signals and increment pc
@@ -3950,13 +3864,14 @@ private:
 	mov_register_label (sc_bv<8> *reg_destination)
 	{
 		bool ready = false;
-
+		//std::cout << "Hello from MOV A, label!" << std::endl;
 		switch (execCount)
 		{
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3967,9 +3882,11 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data form databus to register" << endl;
+				cout << "Write low byte from databus to ZR" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " of ZR" << std::endl;
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
@@ -3978,8 +3895,8 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE low byte address PC = " << pc.to_uint ()
-						<< " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -3989,7 +3906,9 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " of ZR" << std::endl;
 				execCount++;
 				break;
 			case 7: // reset control signals and increment pc
@@ -4008,9 +3927,11 @@ private:
 				setProcSignals_mem_read ();
 				execCount++;
 				break;
-			case 10: //get data from Memory
+			case 10: //get data from Memory at address ZR and load it
 				*reg_destination = read_databus_resolved ();
-				std::cout << "Got byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " from address in ZR" << std::endl;
 				execCount++;
 				break;
 			case 11: //  reset control signals
@@ -4018,25 +3939,22 @@ private:
 				execCount = 0;
 				ready = true;
 				break;
-
 		}
-
 		return ready;
 	}
 
 	bool
 	mov_register_label (sc_bv<16> *reg_destination)
 	{
-
 		bool ready = false;
-
 		switch (execCount)
 		{
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:
 				// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4051,7 +3969,9 @@ private:
 				// Write low byte to ZR
 				cout << "Write low byte of data form databus to register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " of ZR" << std::endl;
 				execCount++;
 				break;
 			case 3:
@@ -4062,8 +3982,8 @@ private:
 				break;
 			case 4:
 				// Write PC to address bus
-				cout << "WRITE low byte address PC = " << pc.to_uint ()
-						<< " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4073,7 +3993,9 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " of ZR" << std::endl;
 				execCount++;
 				break;
 			case 7: // reset control signals and increment pc
@@ -4095,7 +4017,9 @@ private:
 			case 10: //get data from Memory
 				*reg_destination = (*reg_destination & 0xff00)
 						| (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " from ZR address" << std::endl;
 				execCount++;
 				break;
 			case 11: // increment zr and reset control signals
@@ -4117,7 +4041,9 @@ private:
 			case 14: // Write high byte to destination register
 				*reg_destination = (read_databus_resolved () << 8)
 						| (*reg_destination & 0x00FF);
-				std::cout << "Got hi byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
+						<< " from ZR address" << std::endl;
 				execCount++;
 				break;
 			case 15: //  reset control signals
@@ -4125,16 +4051,13 @@ private:
 				execCount = 0;
 				ready = true;
 				break;
-
 		}
-
 		return ready;
 	}
 
 	bool
 	call_label ()
 	{
-
 		bool ready = false;
 
 		switch (execCount)
@@ -4143,7 +4066,8 @@ private:
 			//-------------------------------------------------------------------------
 			case 0:
 				// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE low byte address 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4168,8 +4092,8 @@ private:
 				break;
 			case 4:
 				// Write PC to address bus
-				cout << "WRITE low byte address PC = " << pc.to_uint ()
-						<< " to AddressBus" << endl;
+				cout << "WRITE high byte address 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4178,7 +4102,7 @@ private:
 				execCount++;
 				break;
 			case 6:  // Write hi byte to zr
-				cout << "WRITE high byte of databus to regiser" << endl;
+				cout << "WRITE high byte of databus to ZR register" << endl;
 				zr (15, 8) = dataBus.read ();
 				execCount++;
 				break;
@@ -4238,22 +4162,18 @@ private:
 				ready = true;
 				break;
 		}
-
 		return ready;
-
 	}
 
 	bool
 	ret ()
 	{
-
 		bool ready = false;
 
 		switch (execCount)
 		{
-
 			//-------------------------------------------------------------------------
-			case 0:	// Write Stack Pointer register to address bus
+			case 0:	// Write stack pointer register to address bus
 				cout << "WRITE SP = " << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
@@ -4291,7 +4211,6 @@ private:
 				ready = true;
 				break;
 		}
-
 		return ready;
 	}
 
@@ -4359,7 +4278,6 @@ private:
 	push ()
 	{
 		bool ready = false;
-
 		switch (execCount)
 		{
 
@@ -4370,7 +4288,8 @@ private:
 				break;
 
 			case 1:	// Write Stack Pointer register to address bus
-				cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+				cout << "WRITE SP = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
 				break;
@@ -4433,7 +4352,8 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:  // Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4444,9 +4364,11 @@ private:
 				break;
 
 			case 2:  // Write low byte to ZR
-				cout << "Write low byte of data from databus to register" << endl;
+				std::cout << "Write low byte of data from databus to ZR register"
+						<< std::endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
@@ -4488,7 +4410,8 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = " << pc << " to AddressBus" << endl;
+				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4499,9 +4422,11 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data from databus to register" << endl;
+				std::cout << "Write low byte of data from databus to ZR register"
+						<< std::endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte " << read_databus_resolved () << std::endl;
+				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
@@ -4510,27 +4435,26 @@ private:
 				execCount++;
 				break;
 
-				// copy data from io to register
+				// Copy data from io to register
 				//-----------------------------------------------------------------------------------------
-			case 4: // write address from zr to address bus
+			case 4:  // Write address from zr to address bus
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 5: // Set control signals for read
+			case 5:  // Set control signals for write
 				setProcSignals_io_write ();
 				execCount++;
 				break;
-			case 6: //get data from io
+			case 6:  // Get data from io
 				dataBus.write (a);
 				execCount++;
 				break;
-			case 7: //  reset control signals
+			case 7:  // Reset control signals
 				resetProcSignals ();
 				execCount = 0;
 				ready = true;
 				break;
 		}
-
 		return ready;
 	}
 

@@ -138,10 +138,9 @@ sc_main (int argc, char* argv[])
 	sc_trace(fp,sig_iorq,"iorq");
 	//	sc_trace(fp,sig_dataBus,"dataBus");
 	//	sc_trace(fp,sig_addressBus,"addressBus");
-
 	//	myWriter->setupVCDFile("mc8");
 
-	sc_start (200, SC_MS);	// run the simulation for 100 µ-sec
+	sc_start (300, SC_MS);	// run the simulation for 100 µ-sec
 
 	//myWriter->closeFile();
 	sc_close_vcd_trace_file(fp);
