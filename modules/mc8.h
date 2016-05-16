@@ -756,11 +756,11 @@ private:
 
 						case 0xC9: // RET
 							if (execCount == 0)
-								std::cout << "EXECUTE  OUT RET ... [START]" << std::endl;
+								std::cout << "EXECUTE  RET ... [START]" << std::endl;
 
 							if (ret ())
 							{
-								std::cout << "EXECUTE  OUT RET ... [END]" << std::endl;
+								std::cout << "EXECUTE  RET ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -4236,19 +4236,24 @@ private:
 				execCount++;
 				break;
 
-			case 2:	//Set control sigs for mem read
+			case 1:	//Set control sigs for mem read
 				setProcSignals_mem_read ();
 				execCount++;
 				break;
 
-			case 3:	// read PC low byte
+			case 2:	// read PC low byte
 				pc (7, 0) = read_databus_resolved ();
 				execCount++;
 				break;
 
-			case 4:	// Reset control signals and and invrement sp
+			case 3:	// Reset control signals and and invrement sp
 				resetProcSignals ();
 				sp = sp.to_uint () + 1;
+				execCount++;
+				break;
+
+			case 4:  // Write stack pointer to address bus
+				addressBus.write (sp);
 				execCount++;
 				break;
 
@@ -4286,12 +4291,12 @@ private:
 				execCount++;
 				break;
 
-			case 2:	//Set control sigs for mem read
+			case 1:	//Set control sigs for mem read
 				setProcSignals_mem_read ();
 				execCount++;
 				break;
 
-			case 3:	// read status flags
+			case 2:	// read status flags
 			{
 				sc_bv<8> input_data = read_databus_resolved ();
 
@@ -4304,9 +4309,14 @@ private:
 			}
 				break;
 
-			case 4:	// Reset control signals and and invrement sp
+			case 3:	// Reset control signals and and increment sp
 				resetProcSignals ();
 				sp = sp.to_uint () + 1;
+				execCount++;
+				break;
+
+			case 4:  // Write stack pointer to address bus
+				addressBus.write (sp);
 				execCount++;
 				break;
 
@@ -4368,15 +4378,19 @@ private:
 				execCount++;
 				break;
 
-			case 5: // Set control sigs for mem read
+			case 5:  // Write stack pointer to address bus
+				addressBus.write (sp);
+				execCount++;
+				break;
+
+			case 6: // Set control sigs for mem write
 				setProcSignals_mem_write ();
 				execCount++;
 				break;
 
-			case 6: // Write status Register to mem
+			case 7: // Write status Register to mem
 			{
 				cout << "Write Status regs to databus " << endl;
-
 				sc_lv<8> output_data;
 				output_data[0] = flag_s;
 				output_data[1] = flag_pv;
@@ -4389,7 +4403,7 @@ private:
 			}
 				break;
 
-			case 7:	// Reset control signals and and decrement sp
+			case 8:	// Reset control signals
 				resetProcSignals ();
 				execCount++;
 				ready = true;
