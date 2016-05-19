@@ -1,0 +1,44 @@
+START:
+
+MOV A,rd_t1
+MOV HL,rd_t2
+MOV IX,rd_t3
+
+;Test für mem write funktionen
+MOV wr_t1,A
+MOV wr_t2,HL
+MOV wr_t3,IX
+MOV [HL],A
+INC HL
+MOV A,[HL]
+
+;Test IO Funktionen
+OUT 00h,A ; schreiben auf output A sollte 11h sein
+IN A,01h ;lesen von input
+
+;Test Unterprogrammaufruf
+PUSH
+CALL  UNTERPROGRAMM
+
+JP START
+
+rd_t1: DB 55h
+rd_t2: DW 2020h
+rd_t3: DW 2121h
+
+ORG 1040h
+UNTERPROGRAMM:
+MOV A,55h
+POP
+RET
+
+
+
+ORG 2000h
+wr_t1: DB FFh
+wr_t2: DW 0000h
+wr_t3: DW 0000h
+
+ORG 2020h
+DB 00h
+DB 11h ; Test MOV a,[HL]
