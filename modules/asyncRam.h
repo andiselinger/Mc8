@@ -36,7 +36,39 @@ public:
 			memory[i] = data[i];
 		}
 
+		/*
+		 FILE *pfile;
 
+		 pfile = fopen (filename.c_str(),"r");
+		 if (pfile!=NULL)
+		 {
+		 for(int i; i < SIZE; i++)
+		 {
+		 int val = fgetc (pfile);
+
+		 if (val == EOF) break;
+
+		 memory[i]=val;
+		 }
+		 }else
+		 {
+		 cout << " file error : memory not initialized" << endl;
+		 }
+
+		 memory[0x0000] = 0x3A; // test MOV A,label
+		 memory[0x0001] = 0x01;
+		 memory[0x0002] = 0x30;
+		 memory[0x0003] = 0x3C; // inc A
+		 memory[0x0004] = 0x32; // test MOV label,A
+		 memory[0x0005] = 0x22;
+		 memory[0x0006] = 0x3D;
+		 memory[0x1001] = 0xFF; // test MOV A,label
+		 memory[0x1002] = 0x02;
+		 memory[0x1003] = 0x00;
+		 memory[0x1004] = 0xC3;
+		 memory[0x1006] = 0x05;
+		 memory[0x1007] = 0x22;
+		 */
 	}
 
 private:
@@ -51,7 +83,6 @@ private:
 		while (1)
 		{
 			wait (rd.negedge_event ());
-
 			if (!busy)
 			{
 				busy = true;
@@ -62,9 +93,6 @@ private:
 				cout << "RAM here, reading Data: " << memory[address]
 						<< " from Address :" << address << endl;
 #endif
-				wait (rd.posedge_event ());
-				wait (1, SC_NS);
-				dataBus.write ("zzzzzzzz");
 				busy = false;
 			}
 		}
@@ -76,40 +104,20 @@ private:
 		while (1)
 		{
 			wait (wr.negedge_event ());
-
+			dataBus.write ("zzzzzzzz");
 			if (!busy)
 			{
 				busy = true;
 				address = addrBus.read ().to_uint ();
 				wait (RAM_WRITE_DELAY_NS, SC_NS);
-				memory[address] = read_databus_resolved ();
+				memory[address] = dataBus.read ();
 #ifdef TEST
-				cout << "RAM here, writing Data: " << "0x" << hex << memory[address] << " to Address :"
-						<< "0x" << hex << address << endl;
+				cout << "RAM here, writing Data: " << memory[address] << " to Address :"
+				<< address << endl;
 #endif
 				busy = false;
 			}
 		}
 	}
-
-
-	sc_bv<8> read_databus_resolved ()
-		{
-			sc_bv<8> input_data_bv;
-			sc_lv<8> input_data_lv = dataBus.read ();
-
-			if (input_data_lv == "zzzzzzzz" || input_data_lv == "xxxxxxxx")
-			{
-				cout << "Module asyncRAM: Error reading dataBus : undefined value" << endl;
-				input_data_bv = "00000000";
-			//	exit (-1);
-			}
-			else
-			{
-				input_data_bv = input_data_lv.to_uint ();
-			}
-
-			return input_data_bv;
-		}
 
 };

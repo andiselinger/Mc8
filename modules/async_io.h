@@ -40,7 +40,7 @@ public:
 		{
 			SC_THREAD(writeData);
 		}
-
+		SC_THREAD(weak);
 	}
 
 private:
@@ -55,15 +55,10 @@ private:
 		while (1)
 		{
 			wait (rd.negedge_event ());
-			wait(1,SC_NS);
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
 			if (io_addr == port_address)
 				dataBus.write (connect.read ());
-
-			wait (rd.posedge_event ());
-			wait(1,SC_NS);
-									dataBus.write ("zzzzzzzz");
 		}
 	}
 
@@ -72,37 +67,25 @@ private:
 	{
 		while (1)
 		{
-			wait (wr.negedge_event ());
-			wait(1,SC_NS);
+			wait (rd.negedge_event ());
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
 			if (io_addr == port_address)
-				connect.write (read_databus_resolved());
-
-
+				connect.write (dataBus.read ());
 		}
 	}
 
+	void
+	weak ()
+	{
+		// if there is no reading of the io set the data Output to all z
+		while (1)
+		{
+			wait (rd.posedge_event ());
+			dataBus.write ("zzzzzzzz");
+		}
 
-
-	sc_bv<8> read_databus_resolved ()
-			{
-				sc_bv<8> input_data_bv;
-				sc_lv<8> input_data_lv = dataBus.read ();
-
-				if (input_data_lv == "zzzzzzzz" || input_data_lv == "xxxxxxxx")
-				{
-					cout << "Module asyncIO: Error reading dataBus : undefined value" << endl;
-					input_data_bv = "00000000";
-					exit (-1);
-				}
-				else
-				{
-					input_data_bv = input_data_lv.to_uint ();
-				}
-
-				return input_data_bv;
-			}
+	}
 };
 
 #endif
