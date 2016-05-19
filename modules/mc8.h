@@ -89,6 +89,11 @@ public:
 		sc_trace (fp, a, "A_" + (std::string) name);
 		sc_trace (fp, b, "B_" + (std::string) name);
 		sc_trace (fp, c, "C_" + (std::string) name);
+		sc_trace (fp, pc, "PC_" + (std::string) name);
+		sc_trace (fp, zr, "ZR_" + (std::string) name);
+		sc_trace (fp, ix, "IX_" + (std::string) name);
+		sc_trace (fp, hl, "HL_" + (std::string) name);
+		sc_trace (fp, sp, "SP_" + (std::string) name);
 		// ... add any signals you like
 		/*
 		 myWriter->registerBool("CLK");
@@ -2671,6 +2676,7 @@ private:
 	void
 	resetControlSignals ()
 	{
+		dataBus.write ("zzzzzzzz");
 		wr.write (true);
 		rd.write (true);
 		mreq.write (true);
@@ -2685,6 +2691,7 @@ private:
 		rd.write (true);
 		mreq.write (true);
 		iorq.write (true);
+		dataBus.write ("zzzzzzzz");
 		addressBus.write (false);
 	}
 
@@ -3714,13 +3721,13 @@ private:
 				execCount++;
 				break;
 
-			case 1:	//Set control sigs for mem read
-				setProcSignals_mem_write ();
+			case 1:	// read data from bus to destination
+				dataBus.write (*reg_source);
 				execCount++;
 				break;
 
-			case 2:	// read data from bus to destination
-				dataBus.write (*reg_source);
+			case 2:	//Set control sigs for mem read
+				setProcSignals_mem_write ();
 				execCount++;
 				break;
 
@@ -3795,17 +3802,17 @@ private:
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 9: // Set control signals for mem write
-				setProcSignals_mem_write ();
-				execCount++;
-				break;
-			case 10: //write data to Memory
+			case 9: //write data to databus
 			{
 				sc_bv<8> lowByte = reg_source->range (7, 0);
 				dataBus.write (lowByte);
 				execCount++;
 				break;
 			}
+			case 10: // Set control signals for mem write
+				setProcSignals_mem_write ();
+				execCount++;
+				break;
 			case 11: // increment zr and reset control signals
 				resetProcSignals ();
 				zr = zr.to_uint () + 1;
@@ -3818,17 +3825,17 @@ private:
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 13: // Set control signals for write
-				setProcSignals_mem_write ();
-				execCount++;
-				break;
-			case 14: // Write high byte to destination register
+			case 13: // Write high byte to databus
 			{
 				sc_bv<8> highByte = reg_source->range (15, 8);
 				dataBus.write (highByte);
 				execCount++;
 				break;
 			}
+			case 14: // Set control signals for write
+				setProcSignals_mem_write ();
+				execCount++;
+				break;
 			case 15: //  reset control signals
 				resetProcSignals ();
 				execCount = 0;
@@ -3899,12 +3906,15 @@ private:
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 9: // Set control signals for read
-				setProcSignals_mem_write ();
-				execCount++;
+			case 9: //write data to Memory
+				{
+					sc_lv<8> data = reg_source->to_uint();
+					dataBus.write (data);
+					execCount++;
+				}
 				break;
-			case 10: //get data from Memory
-				dataBus.write (*reg_source);
+			case 10: // Set control signals for write
+				setProcSignals_mem_write ();
 				execCount++;
 				break;
 			case 11: //  reset control signals
@@ -4182,16 +4192,17 @@ private:
 				execCount++;
 				break;
 
-			case 10:	//Set control sigs for mem write
-				setProcSignals_mem_write ();
-				execCount++;
-				break;
-
-			case 11:	// Write high byte to stack
+			case 10:	// Write high byte to stack
 				cout << "Write high Byte of PC to databus " << endl;
 				dataBus.write (sc_lv<8> (pc.range (15, 8)));
 				execCount++;
 				break;
+
+			case 11:	//Set control sigs for mem write
+				setProcSignals_mem_write ();
+				execCount++;
+				break;
+
 
 			case 12:	// Reset control signals and and decrement sp
 				resetProcSignals ();
@@ -4199,18 +4210,20 @@ private:
 				execCount++;
 				break;
 
-			case 13: // Set control sigs for mem write
-				setProcSignals_mem_write ();
-				execCount++;
-				break;
-
-			case 14: // Write low byte of pc to stack
+			case 13: // Write low byte of pc to stack
 			{
 				cout << "Write low byte of pc to stack " << endl;
 				dataBus.write (sc_lv<8> (pc.range (7, 0)));
 				execCount++;
 			}
+			break;
+
+
+			case 14: // Set control sigs for mem write
+				setProcSignals_mem_write ();
+				execCount++;
 				break;
+
 
 			case 15:	// Reset control signals and and copy zr to pc
 				pc = zr;
@@ -4361,14 +4374,15 @@ private:
 				execCount++;
 				break;
 
-			case 2:	//Set control sigs for mem write
-				setProcSignals_mem_write ();
+
+			case 2:	// Write Accu to mem
+				cout << "Write Accu to databus " << endl;
+				dataBus.write (a);
 				execCount++;
 				break;
 
-			case 3:	// Write Accu to mem
-				cout << "Write Accu to databus " << endl;
-				dataBus.write (a);
+			case 3:	//Set control sigs for mem write
+				setProcSignals_mem_write ();
 				execCount++;
 				break;
 
@@ -4383,12 +4397,7 @@ private:
 				execCount++;
 				break;
 
-			case 6: // Set control sigs for mem write
-				setProcSignals_mem_write ();
-				execCount++;
-				break;
-
-			case 7: // Write status Register to mem
+			case 6: // Write status Register to mem
 			{
 				cout << "Write Status regs to databus " << endl;
 				sc_lv<8> output_data;
@@ -4401,6 +4410,11 @@ private:
 				dataBus.write (output_data);
 				execCount++;
 			}
+				break;
+
+			case 7: // Set control sigs for mem write
+				setProcSignals_mem_write ();
+				execCount++;
 				break;
 
 			case 8:	// Reset control signals
@@ -4442,6 +4456,7 @@ private:
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
+
 			case 3:	// Reset control signals and pc++
 				resetProcSignals ();
 				pc = pc.to_uint () + 1;
@@ -4512,12 +4527,12 @@ private:
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 5:  // Set control signals for write
-				setProcSignals_io_write ();
+			case 5:  // Write data to io
+				dataBus.write (a);
 				execCount++;
 				break;
-			case 6:  // Get data from io
-				dataBus.write (a);
+			case 6:  // Set control signals for write
+				setProcSignals_io_write ();
 				execCount++;
 				break;
 			case 7:  // Reset control signals

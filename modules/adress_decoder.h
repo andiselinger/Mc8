@@ -62,6 +62,7 @@ private:
 		}
 		else if (IO_in.read () == false && M_in.read () == true)
 		{
+			address_bus_out.write (address);
 			WR_io.write (WR_in.read ());
 			RD_io.write (RD_in.read ());
 		}
