@@ -74,9 +74,11 @@ sc_main (int argc, char* argv[])
 	sc_signal_rv<8> sig_dataBus;
 	sc_signal_rv<8> sig_dataBus_ram; // test
 	sc_signal_rv<8> connect;
+	sc_signal_rv<8> connect2;
 
 	sig_dataBus.write("zzzzzzzz");
-	connect.write("00000000");
+	connect.write("zzzzzzzz");
+	connect2.write("00000000");
 
 	// Create trace file
 	fp = sc_create_vcd_trace_file ("wave");
@@ -106,6 +108,14 @@ sc_main (int argc, char* argv[])
 	io1.wr (sig_wr_io);
 	io1.rd (sig_rd_io);
 	io1.connect (connect);
+
+	// constructor needs name, address, bool input or output
+	asyncIO io2 ("io2", 0x01, true);  // true: input, false: output
+	io2.addrBus (sig_addressBus_mem);
+	io2.dataBus (sig_dataBus);
+	io2.wr (sig_wr_io);
+	io2.rd (sig_rd_io);
+	io2.connect (connect2);
 
 	asyncRom myRom ("myROM");
 	myRom.rd (sig_rd_rom);
@@ -154,12 +164,12 @@ sc_main (int argc, char* argv[])
 	sc_trace(fp,sig_iorq,"iorq");
 		sc_trace(fp,sig_dataBus,"dataBus");
 
-
+		sc_trace(fp,connect,"port_output");
 		sc_trace(fp,sig_addressBus_cpu,"addressBus_cpu");
 		sc_trace(fp,sig_addressBus_mem,"addressBus_mem");
 	//	myWriter->setupVCDFile("mc8");
 
-	sc_start (300, SC_MS);	// run the simulation for 100 µ-sec
+	sc_start (700, SC_MS);	// run the simulation for 100 µ-sec
 
 	//myWriter->closeFile();
 	sc_close_vcd_trace_file(fp);
