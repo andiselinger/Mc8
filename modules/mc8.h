@@ -38,8 +38,6 @@ public:
 	sc_out<bool> mreq;
 	sc_out<bool> iorq;
 
-	/*	sc_in<sc_bv<8> > dataBus_in;
-	 sc_out<sc_bv<8> > dataBus;*/
 	sc_out<sc_bv<16> > addressBus;
 
 	sc_inout_rv<8> dataBus;
@@ -689,7 +687,7 @@ private:
 
 							if (push ())
 							{
-								std::cout << "EXECUTE  IN POP ... [END]" << std::endl;
+								std::cout << "EXECUTE  PUSH ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -2735,7 +2733,14 @@ private:
 		zr = 0x0000;
 		ix = 0x0000;
 		hl = 0x0000;
+		sp = 0x0000;
 		a = 0x00;
+		b = 0x00;
+		c = 0x00;
+		flag_c = 0;
+		flag_z = 0;
+		flag_pv = 0;
+		flag_s = 0;
 		fetchState = SET_ADDRESS;
 		execCount = 0;
 		state = FETCH_INSTR;
@@ -4271,6 +4276,7 @@ private:
 				resetProcSignals ();
 				execCount++;
 				ready = true;
+				std::cout << "RET DONE !!!!!!!!!!!!!!!!!!" << std::endl;
 				break;
 		}
 		return ready;
@@ -4366,13 +4372,14 @@ private:
 				execCount++;
 				break;
 
-			case 3:	// Write Accu to mem
-				cout << "Write Accu to databus " << endl;
+			case 3:	// Write A to mem
+				cout << "Write A = 0x" << std::hex << std::setw (2) << a
+						<< " to databus " << endl;
 				dataBus.write (a);
 				execCount++;
 				break;
 
-			case 4:	// Reset control signals and and decrement sp
+			case 4:	// Reset control signals and decrement sp
 				resetProcSignals ();
 				sp = sp.to_uint () - 1;
 				execCount++;
@@ -4482,7 +4489,7 @@ private:
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
 				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
-						<< std::setfill ('0') << pc << " to AddressBus" << endl;
+						<< std::setfill ('0') << pc << " to AddressBus @" << sc_time_stamp() << endl;
 				addressBus.write (pc);
 				execCount++;
 				break;
@@ -4501,6 +4508,7 @@ private:
 				execCount++;
 				break;
 			case 3:	// Reset control signals and pc++
+				std::cout << "reset Proc Signals @" << sc_time_stamp()  << std::endl;
 				resetProcSignals ();
 				pc = pc.to_uint () + 1;
 				execCount++;
@@ -4509,15 +4517,19 @@ private:
 				// Copy data from io to register
 				//-----------------------------------------------------------------------------------------
 			case 4:  // Write address from zr to address bus
+				std::cout << "Write zr = 0x" << std::hex << zr.to_uint ()
+						<< " to address bus @" << sc_time_stamp() << std::endl;
 				addressBus.write (zr);
 				execCount++;
 				break;
-			case 5:  // Set control signals for write
-				setProcSignals_io_write ();
+			case 5:  // Write data to io
+				std::cout << "Write A = 0x" << std::hex << a.to_uint ()
+						<< " to data bus @" << sc_time_stamp() << std::endl;
+				dataBus.write (a);
 				execCount++;
 				break;
-			case 6:  // Get data from io
-				dataBus.write (a);
+			case 6:  // Set control signals for write
+				setProcSignals_io_write ();
 				execCount++;
 				break;
 			case 7:  // Reset control signals

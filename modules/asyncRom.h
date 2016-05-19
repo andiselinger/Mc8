@@ -1,6 +1,9 @@
 #include "systemc.h"
 #include "global_definitions.h"
 
+extern sc_trace_file *fp;  // Trace file from main.cpp
+
+
 SC_MODULE(asyncRom)
 {
 
@@ -13,8 +16,9 @@ public:
 
 	SC_CTOR(asyncRom)
 	{
-		SC_THREAD(readData);
-		SC_THREAD(weak);
+		sc_trace (fp, rd, "RD_ROM");
+		SC_THREAD(doIt);
+		sensitive << rd;
 	}
 
 	void
@@ -29,20 +33,6 @@ public:
 						<< (int) data[i] << endl;
 			memory[i] = data[i];
 		}
-
-		/*memory[0] = 0x3A;
-		 memory[1] = 0x03;
-		 memory[2] = 0x00;
-		 memory[3] = 0xFF;
-		 memory[4] = 0x22;
-		 memory[0x2205] = 0x3D;
-		 memory[0x2206] = 0xC3;
-		 memory[0x2207] = 0x02;
-		 memory[0x2208] = 0x00;
-		 memory[0x2209] = 0xC3;
-		 memory[0x220A] = 0x05;
-		 memory[0x220B] = 0x22;*/
-
 	}
 
 private:
@@ -51,29 +41,29 @@ private:
 	unsigned int addressToRead;
 
 	void
-	readData ()
+	doIt ()
 	{
 		while (1)
 		{
-			wait (rd.negedge_event ());
-			addressToRead = addrBus.read ().to_uint ();
-			wait (ROM_READ_DELAY_US, SC_NS);
+			wait ();  // for event on rd
+
+			if (rd.read () == false)  // neg edge
+			{
+				addressToRead = addrBus.read ().to_uint ();
+				wait (ROM_READ_DELAY_US, SC_NS);
 #ifdef TEST
-			cout << "ROM here, reading Data: " << memory[addressToRead]
-					<< " from Address :" << addressToRead << endl;
+				cout << "ROM here, reading Data: " << memory[addressToRead]
+						<< " from Address :" << addressToRead << endl;
 #endif
-			dataBus.write (memory[addressToRead]);
+				dataBus.write (memory[addressToRead]);
+			}
+			else  // pos edge
+			{
+#ifdef TEST
+				std::cout << "ROM: RD pos edge @" << sc_time_stamp () << std::endl;
+#endif
+				dataBus.write ("zzzzzzzz");
+			}
 		}
 	}
-
-	void
-	weak ()
-	{
-		while (1)
-		{
-			wait (rd.posedge_event ());
-			dataBus.write ("zzzzzzzz");
-		}
-	}
-
 };

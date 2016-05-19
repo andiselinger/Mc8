@@ -2,6 +2,7 @@
 #include "global_definitions.h"
 #include <cstdio>
 
+#define TEST
 SC_MODULE(asyncRam)
 {
 
@@ -10,15 +11,14 @@ public:
 	sc_in<bool> wr;
 	sc_in<bool> rd;
 	sc_in<sc_bv<16> > addrBus;
-	//sc_in<sc_bv<8> > dataBus_in;
-	//sc_out<sc_bv<8> > dataBus_out;
-
 	sc_out_rv<8> dataBus;
 
 	SC_CTOR(asyncRam)
 	{
 		SC_THREAD(readData);
+		sensitive << rd;
 		SC_THREAD(writeData);
+		sensitive << wr;
 
 		busy = false;
 	}
@@ -35,40 +35,6 @@ public:
 						<< (int) data[i] << endl;
 			memory[i] = data[i];
 		}
-
-		/*
-		 FILE *pfile;
-
-		 pfile = fopen (filename.c_str(),"r");
-		 if (pfile!=NULL)
-		 {
-		 for(int i; i < SIZE; i++)
-		 {
-		 int val = fgetc (pfile);
-
-		 if (val == EOF) break;
-
-		 memory[i]=val;
-		 }
-		 }else
-		 {
-		 cout << " file error : memory not initialized" << endl;
-		 }
-
-		 memory[0x0000] = 0x3A; // test MOV A,label
-		 memory[0x0001] = 0x01;
-		 memory[0x0002] = 0x30;
-		 memory[0x0003] = 0x3C; // inc A
-		 memory[0x0004] = 0x32; // test MOV label,A
-		 memory[0x0005] = 0x22;
-		 memory[0x0006] = 0x3D;
-		 memory[0x1001] = 0xFF; // test MOV A,label
-		 memory[0x1002] = 0x02;
-		 memory[0x1003] = 0x00;
-		 memory[0x1004] = 0xC3;
-		 memory[0x1006] = 0x05;
-		 memory[0x1007] = 0x22;
-		 */
 	}
 
 private:
@@ -82,8 +48,8 @@ private:
 	{
 		while (1)
 		{
-			wait (rd.negedge_event ());
-			if (!busy)
+			wait ();
+			if (!busy && rd.read () == false)  // neg edge event
 			{
 				busy = true;
 				address = addrBus.read ().to_uint ();
@@ -95,6 +61,10 @@ private:
 #endif
 				busy = false;
 			}
+			else if (rd.read () == true)  // pos edge event
+			{
+				dataBus.write ("zzzzzzzz");
+			}
 		}
 	}
 
@@ -103,9 +73,9 @@ private:
 	{
 		while (1)
 		{
-			wait (wr.negedge_event ());
+			wait ();  // wait for wr event
 			dataBus.write ("zzzzzzzz");
-			if (!busy)
+			if (!busy && wr.read () == false)  // neg edge
 			{
 				busy = true;
 				address = addrBus.read ().to_uint ();
@@ -113,7 +83,7 @@ private:
 				memory[address] = dataBus.read ();
 #ifdef TEST
 				cout << "RAM here, writing Data: " << memory[address] << " to Address :"
-				<< address << endl;
+						<< address << endl;
 #endif
 				busy = false;
 			}

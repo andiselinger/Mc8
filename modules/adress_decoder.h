@@ -4,6 +4,8 @@
 #include "systemc.h"
 #include "global_definitions.h"
 
+extern sc_trace_file *fp;  // Trace file from main.cpp
+
 #define RAM_START (ROM_SIZE+1)
 
 SC_MODULE(address_decoder)
@@ -27,6 +29,7 @@ public:
 
 	SC_CTOR(address_decoder)
 	{
+		sc_trace (fp, RD_io, "RD_io");
 		SC_METHOD(decode);
 
 		sensitive << M_in;
@@ -62,6 +65,7 @@ private:
 		}
 		else if (IO_in.read () == false && M_in.read () == true)
 		{
+			std::cout << "AddDec: IO Request!" << std::endl;
 			WR_io.write (WR_in.read ());
 			RD_io.write (RD_in.read ());
 		}

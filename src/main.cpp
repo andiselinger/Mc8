@@ -45,11 +45,6 @@ sc_main (int argc, char* argv[])
 	unsigned char *rom_data = mem;
 	unsigned char *ram_data = mem + RAM_START;
 
-	/*
-	 initSesydFramework();
-	 myWriter = new FileWriter();
-	 */
-
 	sc_signal<bool> sig_clk;
 	sc_signal<bool> sig_tclk;
 	sc_signal<bool> sig_res;
@@ -66,17 +61,16 @@ sc_main (int argc, char* argv[])
 	sc_signal<bool> sig_rd_rom;
 	sc_signal<bool> sig_rd_io;
 
-	sc_signal<sc_bv<8> > sig_dataBus_cputomem;
-	sc_signal<sc_bv<8> > sig_dataBus_memtocpu;
 	sc_signal<sc_bv<16> > sig_addressBus_cpu;
 	sc_signal<sc_bv<16> > sig_addressBus_mem;
 
 	sc_signal_rv<8> sig_dataBus;
-	sc_signal_rv<8> connect;
+	sc_signal_rv<8> connect_0;
+	sc_signal_rv<8> connect_1;
 
 	// Create trace file
 	fp = sc_create_vcd_trace_file ("wave");
-	fp->set_time_unit(10, SC_NS);
+	fp->set_time_unit (1, SC_NS);
 
 	// Components
 	clkResGen crg ("CLKRES");
@@ -96,12 +90,19 @@ sc_main (int argc, char* argv[])
 	myMC8.addressBus (sig_addressBus_cpu);
 
 	// constructor needs name, address, bool input or output
-	asyncIO io1 ("io1", 0x00, false);  // true: input, false: output
-	io1.addrBus (sig_addressBus_mem);
+	asyncIO io0 ("io0", 0x00, true);  // true: input, false: output
+	io0.addrBus (sig_addressBus_cpu);
+	io0.dataBus (sig_dataBus);
+	io0.wr (sig_wr_io);
+	io0.rd (sig_rd_io);
+	io0.connect (connect_0);
+
+	asyncIO io1 ("io1", 0x03, false);  // true: input, false: output
+	io1.addrBus (sig_addressBus_cpu);
 	io1.dataBus (sig_dataBus);
 	io1.wr (sig_wr_io);
 	io1.rd (sig_rd_io);
-	io1.connect (connect);
+	io1.connect (connect_1);
 
 	asyncRom myRom ("myROM");
 	myRom.rd (sig_rd_rom);
@@ -129,21 +130,25 @@ sc_main (int argc, char* argv[])
 	myAddressDecoder.WR_io (sig_wr_io);
 	myAddressDecoder.RD_io (sig_rd_io);
 
-	//
-	sc_trace(fp,sig_clk,"clk");
-	sc_trace(fp,sig_res,"res");
-	sc_trace(fp,sig_wr,"wr");
-	sc_trace(fp,sig_rd,"rd");
-	sc_trace(fp,sig_mreq,"mreq");
-	sc_trace(fp,sig_iorq,"iorq");
-	//	sc_trace(fp,sig_dataBus,"dataBus");
-	//	sc_trace(fp,sig_addressBus,"addressBus");
-	//	myWriter->setupVCDFile("mc8");
+	// Tracing
+	sc_trace (fp, sig_clk, "clk");
+	sc_trace (fp, sig_res, "res");
+	sc_trace (fp, sig_wr, "wr");
+	sc_trace (fp, sig_wr_io, "wr_io");
+	sc_trace (fp, sig_rd, "rd");
+	sc_trace (fp, sig_rd_io, "rd_io");
+	sc_trace (fp, sig_mreq, "mreq");
+	sc_trace (fp, sig_iorq, "iorq");
+	sc_trace (fp, connect_0, "connect_0");
+	sc_trace (fp, connect_1, "connect_1");
+	sc_trace (fp, sig_addressBus_cpu, "addressBus_cpu");
+	sc_trace (fp, sig_addressBus_mem, "addressBus_mem");
+	sc_trace (fp, sig_dataBus, "dataBus");
 
-	sc_start (300, SC_MS);	// run the simulation for 100 µ-sec
+	connect_0.write (0xAF);
+	sc_start (400, SC_MS);	// run the simulation for 100 µ-sec
 
-	//myWriter->closeFile();
-	sc_close_vcd_trace_file(fp);
+	sc_close_vcd_trace_file (fp);
 
 	delete[] mem;
 	return 0;

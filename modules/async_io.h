@@ -4,6 +4,8 @@
 #include "global_definitions.h"
 #include "systemc.h"
 
+extern sc_trace_file *fp;  // Trace file from main.cpp
+
 class asyncIO : public sc_module //SC_MODULE(asyncIO)
 {
 
@@ -32,15 +34,17 @@ public:
 		// configure if input or output
 		// true: input, false: output
 
+		sc_trace (fp, rd, "RD_IO");
 		if (io)
 		{
 			SC_THREAD(readData);
+			sensitive << rd;
 		}
 		else
 		{
 			SC_THREAD(writeData);
 		}
-		SC_THREAD(weak);
+		//SC_THREAD(weak);
 	}
 
 private:
@@ -54,11 +58,23 @@ private:
 	{
 		while (1)
 		{
-			wait (rd.negedge_event ());
-			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
+			wait ();  // for rd event
+			if (rd.read () == false)  // neg edge
+			{
+				std::cout << "READ DATA FROM IO" << std::endl;
+				sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
-			if (io_addr == port_address)
-				dataBus.write (connect.read ());
+				if (io_addr == port_address)
+					dataBus.write (connect.read ());
+			}
+			else   // pos edge
+			{
+				sc_bv<8> io_addr = addrBus.read ().range (7, 0);
+				std::cout << "IO: Write zzzzzzzz to data Bus @" << sc_time_stamp ()
+						<< std::endl;
+				dataBus.write ("zzzzzzzz");
+			}
+
 		}
 	}
 
@@ -67,14 +83,21 @@ private:
 	{
 		while (1)
 		{
-			wait (rd.negedge_event ());
+			wait (wr.negedge_event ());
+			std::cout << "WRITE DATA TO IO @ " << sc_time_stamp () << std::endl;
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
+			std::cout << "IO_mod: io addr: 0x" << io_addr.to_uint ()
+					<< ", port address 0x" << port_address.to_uint () << std::endl;
 
 			if (io_addr == port_address)
+			{
+				std::cout << "IO_mod: Write 0x" << std::hex << std::setw (2)
+						<< dataBus.read () << "to output" << std::endl;
 				connect.write (dataBus.read ());
+			}
 		}
 	}
-
+/*
 	void
 	weak ()
 	{
@@ -82,10 +105,11 @@ private:
 		while (1)
 		{
 			wait (rd.posedge_event ());
+			std::cout << "Write zzzzzzzz to data Bus!" << std::endl;
 			dataBus.write ("zzzzzzzz");
 		}
 
-	}
+	}*/
 };
 
 #endif
