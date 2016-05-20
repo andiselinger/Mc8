@@ -27,6 +27,7 @@ public:
 
 	SC_CTOR(address_decoder)
 	{
+
 		SC_METHOD(decode);
 
 		sensitive << M_in;

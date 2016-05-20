@@ -2,7 +2,6 @@
 #include "global_definitions.h"
 #include <cstdio>
 
-#define TEST
 SC_MODULE(asyncRam)
 {
 
@@ -15,6 +14,7 @@ public:
 
 	SC_CTOR(asyncRam)
 	{
+
 		SC_THREAD(readData);
 		sensitive << rd;
 		SC_THREAD(writeData);
@@ -30,7 +30,7 @@ public:
 		for (int i = 0; i < RAM_SIZE; i++)
 		{
 			if (data[i])
-				cout << "Initialize RAM Address 0x" << std::hex << std::setw (4)
+				std::clog << "Initialize RAM Address 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << i << " with 0x" << std::setw (2)
 						<< (int) data[i] << endl;
 			memory[i] = data[i];
@@ -55,9 +55,9 @@ private:
 				address = addrBus.read ().to_uint ();
 				wait (RAM_READ_DELAY_NS, SC_NS);
 				dataBus.write (memory[address]);
-#ifdef TEST
+#ifdef DEBUG
 				cout << "RAM here, reading Data: " << memory[address]
-						<< " from Address :" << address << endl;
+				<< " from Address :" << address << endl;
 #endif
 				busy = false;
 			}
@@ -81,9 +81,9 @@ private:
 				address = addrBus.read ().to_uint ();
 				wait (RAM_WRITE_DELAY_NS, SC_NS);
 				memory[address] = dataBus.read ();
-#ifdef TEST
+#ifdef DEBUG
 				cout << "RAM here, writing Data: " << memory[address] << " to Address :"
-						<< address << endl;
+				<< address << endl;
 #endif
 				busy = false;
 			}

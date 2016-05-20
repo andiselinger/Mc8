@@ -85,6 +85,7 @@ public:
 	mc8 (sc_module_name name) :
 			sc_module (name)
 	{
+
 		sc_trace (fp, alu1, "alu1_" + (std::string) name); // Add name if you want to use multiple processors
 		sc_trace (fp, a, "A_" + (std::string) name);
 		sc_trace (fp, b, "B_" + (std::string) name);
@@ -151,8 +152,8 @@ private:
 					switch (fetchState)
 					{
 						case SET_ADDRESS:
-							std::cout << "FETCH INSTRUCTION ... [START] " << std::endl;
-							std::cout << "Will fetch instruction at address 0x" << std::hex
+							std::clog << "FETCH INSTRUCTION ... [START] " << std::endl;
+							std::clog << "Will fetch instruction at address 0x" << std::hex
 									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchState = SET_CONTROL_SIG;
@@ -163,7 +164,7 @@ private:
 							break;
 						case READ_TO_INSTR_REG:
 							ir = read_databus_resolved ();
-							std::cout << "Got instruction 0x" << std::hex << std::setw (2)
+							std::clog << "Got instruction 0x" << std::hex << std::setw (2)
 									<< ir.to_uint () << std::endl;
 							fetchState = RESET_CONTROL_SIG;
 							break;
@@ -172,7 +173,7 @@ private:
 							pc = pc.to_uint () + 1;
 							fetchState = SET_ADDRESS;
 							state = DECODE;
-							std::cout << "FETCH INSTRUCTION ... [END] " << std::endl;
+							std::clog << "FETCH INSTRUCTION ... [END] " << std::endl;
 							break;
 						default:
 							fetchState = SET_ADDRESS;
@@ -184,8 +185,8 @@ private:
 					switch (fetchInstrState)
 					{
 						case SET_ADDRESS_LO:
-							std::cout << "FETCH TWO BYTE ADDRESS ... [START] " << std::endl;
-							std::cout << "Will fetch label low byte at address 0x" << std::hex
+							std::clog << "FETCH TWO BYTE ADDRESS ... [START] " << std::endl;
+							std::clog << "Will fetch label low byte at address 0x" << std::hex
 									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchInstrState = SET_CONTROL_SIG_LO;
@@ -196,7 +197,7 @@ private:
 							break;
 						case READ_TO_ZR_LO:
 							zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-							std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+							std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 									<< read_databus_resolved ().to_uint () << std::endl;
 							fetchInstrState = RESET_CONTROL_SIG_LO;
 							break;
@@ -206,7 +207,7 @@ private:
 							fetchInstrState = SET_ADDRESS_HI;
 							break;
 						case SET_ADDRESS_HI:
-							std::cout << "Will fetch label hi byte at address 0x" << std::hex
+							std::clog << "Will fetch label hi byte at address 0x" << std::hex
 									<< std::setw (4) << pc.to_uint () << std::endl;
 							addressBus.write (pc);
 							fetchInstrState = SET_CONTROL_SIG_HI;
@@ -217,7 +218,7 @@ private:
 							break;
 						case READ_TO_ZR_HI:
 							zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-							std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+							std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 									<< read_databus_resolved ().to_uint () << std::endl;
 							fetchInstrState = RESET_CONTROL_SIG_HI;
 							break;
@@ -226,7 +227,7 @@ private:
 							pc = pc.to_uint () + 1;
 							fetchInstrState = SET_ADDRESS_LO;
 							state = EXECUTE;
-							std::cout << "FETCH TWO BYTE ADDRESS... [END] " << std::endl;
+							std::clog << "FETCH TWO BYTE ADDRESS... [END] " << std::endl;
 							break;
 
 						default:
@@ -236,9 +237,9 @@ private:
 					break; //FETCH_TWO_BYTE_ADDRESS
 
 				case DECODE:
-					std::cout << "DECODE INSTRUCTION ... [START] " << std::endl;
+					std::clog << "DECODE INSTRUCTION ... [START] " << std::endl;
 					decodeInstr (ir);
-					std::cout << "DECODE INSTRUCTION ... [END] " << std::endl;
+					std::clog << "DECODE INSTRUCTION ... [END] " << std::endl;
 
 					break; //DECODE
 
@@ -247,9 +248,9 @@ private:
 					{
 						case 0x00:
 							// NOP
-							std::cout << "EXECUTE NOP ... [START] " << std::endl;
+							std::clog << "EXECUTE NOP ... [START] " << std::endl;
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE NOP ... [END] " << std::endl;
+							std::clog << "EXECUTE NOP ... [END] " << std::endl;
 							break;
 
 						case 0x3E:
@@ -257,7 +258,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE MOV A,dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE MOV A,dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -270,7 +271,7 @@ private:
 								case 2:
 									// Read dat_8 to A
 									a = read_databus_resolved ();
-									std::cout << "Read dat_8 and copy to A "
+									std::clog << "Read dat_8 and copy to A "
 											<< read_databus_resolved () << std::endl;
 									execCount++;
 									break;
@@ -278,7 +279,7 @@ private:
 									// Reset control signals
 									resetControlSignals ();
 									pc = pc.to_uint () + 1;
-									std::cout << "EXECUTE MOV A,dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE MOV A,dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -292,7 +293,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE MOV B,dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE MOV B,dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -305,7 +306,7 @@ private:
 								case 2:
 									// Read dat_8 to B
 									b = read_databus_resolved ();
-									std::cout << "Read dat_8 and copy to B "
+									std::clog << "Read dat_8 and copy to B "
 											<< read_databus_resolved () << std::endl;
 									execCount++;
 									break;
@@ -313,7 +314,7 @@ private:
 									// Reset control signals
 									resetControlSignals ();
 									pc = pc.to_uint () + 1;
-									std::cout << "EXECUTE MOV B,dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE MOV B,dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -326,7 +327,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE MOV C,dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE MOV C,dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -339,7 +340,7 @@ private:
 								case 2:
 									// Read dat_8 to C
 									c = read_databus_resolved ();
-									std::cout << "Read dat_8 and copy to C "
+									std::clog << "Read dat_8 and copy to C "
 											<< read_databus_resolved () << std::endl;
 									execCount++;
 									break;
@@ -347,7 +348,7 @@ private:
 									// Reset control signals
 									resetControlSignals ();
 									pc = pc.to_uint () + 1;
-									std::cout << "EXECUTE MOV C,dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE MOV C,dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -395,7 +396,7 @@ private:
 								switch (execCount)
 								{
 									case 0:  // Write PC to address bus
-										std::cout << "EXECUTE  MOV IX, dat_16 ... [START]"
+										std::clog << "EXECUTE  MOV IX, dat_16 ... [START]"
 												<< std::endl;
 										addressBus.write (pc);
 										execCount++;
@@ -408,7 +409,7 @@ private:
 									case 2:
 										// Write low byte to IX
 										ix = (ix & 0xff00) | (0x00FF & read_databus_resolved ());
-										std::cout << "Got low byte " << read_databus_resolved ()
+										std::clog << "Got low byte " << read_databus_resolved ()
 												<< std::endl;
 										execCount++;
 										break;
@@ -420,7 +421,7 @@ private:
 										break;
 									case 4:
 										// Write PC to address bus
-										std::cout << "Will fetch label hi byte at address "
+										std::clog << "Will fetch label hi byte at address "
 												<< pc.to_uint () << std::endl;
 										addressBus.write (pc);
 										execCount++;
@@ -431,7 +432,7 @@ private:
 										break;
 									case 6:  // Write hi byte to IX
 										ix = (read_databus_resolved () << 8) | (ix & 0x00FF);
-										std::cout << "Got hi byte " << read_databus_resolved ()
+										std::clog << "Got hi byte " << read_databus_resolved ()
 												<< std::endl;
 										execCount++;
 										break;
@@ -439,7 +440,7 @@ private:
 										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount = 0;
-										std::cout << "EXECUTE  MOV IX, dat_16 ... [END]"
+										std::clog << "EXECUTE  MOV IX, dat_16 ... [END]"
 												<< std::endl;
 										state = FETCH_INSTR;
 										twoByteInstrB1 = 0;
@@ -451,7 +452,7 @@ private:
 								switch (execCount)
 								{
 									case 0:  // Write PC to address bus
-										std::cout << "EXECUTE  MOV HL, dat_16 ... [START]"
+										std::clog << "EXECUTE  MOV HL, dat_16 ... [START]"
 												<< std::endl;
 										addressBus.write (pc);
 										execCount++;
@@ -464,7 +465,7 @@ private:
 									case 2:
 										// Write low byte to HL
 										hl = (hl & 0xff00) | (0x00FF & read_databus_resolved ());
-										std::cout << "Got low byte " << read_databus_resolved ()
+										std::clog << "Got low byte " << read_databus_resolved ()
 												<< std::endl;
 										execCount++;
 										break;
@@ -476,7 +477,7 @@ private:
 										break;
 									case 4:
 										// Write PC to address bus
-										std::cout << "Will fetch label hi byte at address "
+										std::clog << "Will fetch label hi byte at address "
 												<< pc.to_uint () << std::endl;
 										addressBus.write (pc);
 										execCount++;
@@ -487,7 +488,7 @@ private:
 										break;
 									case 6:  // Write hi byte to HL
 										hl = (read_databus_resolved () << 8) | (hl & 0x00FF);
-										std::cout << "Got hi byte " << read_databus_resolved ()
+										std::clog << "Got hi byte " << read_databus_resolved ()
 												<< std::endl;
 										execCount++;
 										break;
@@ -495,7 +496,7 @@ private:
 										resetControlSignals ();
 										pc = pc.to_uint () + 1;
 										execCount = 0;
-										std::cout << "EXECUTE  MOV HL, dat_16 ... [END]"
+										std::clog << "EXECUTE  MOV HL, dat_16 ... [END]"
 												<< std::endl;
 										state = FETCH_INSTR;
 										twoByteInstrB1 = 0;
@@ -508,7 +509,7 @@ private:
 							switch (execCount)
 							{
 								case 0:  // Write PC to address bus
-									std::cout << "EXECUTE  MOV SP, dat_16 ... [START]"
+									std::clog << "EXECUTE  MOV SP, dat_16 ... [START]"
 											<< std::endl;
 									addressBus.write (pc);
 									execCount++;
@@ -521,7 +522,7 @@ private:
 								case 2:
 									// Write low byte to SP
 									sp = (sp & 0xff00) | (0x00FF & read_databus_resolved ());
-									std::cout << "Got low byte " << read_databus_resolved ()
+									std::clog << "Got low byte " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -533,7 +534,7 @@ private:
 									break;
 								case 4:
 									// Write PC to address bus
-									std::cout << "Will fetch label hi byte at address "
+									std::clog << "Will fetch label hi byte at address "
 											<< pc.to_uint () << std::endl;
 									addressBus.write (pc);
 									execCount++;
@@ -544,7 +545,7 @@ private:
 									break;
 								case 6:  // Write hi byte to SP
 									sp = (read_databus_resolved () << 8) | (sp & 0x00FF);
-									std::cout << "Got hi byte " << read_databus_resolved ()
+									std::clog << "Got hi byte " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -552,7 +553,7 @@ private:
 									resetControlSignals ();
 									pc = pc.to_uint () + 1;
 									execCount = 0;
-									std::cout << "EXECUTE  MOV SP, dat_16 ... [END]" << std::endl;
+									std::clog << "EXECUTE  MOV SP, dat_16 ... [END]" << std::endl;
 									state = FETCH_INSTR;
 									twoByteInstrB1 = 0;
 							} // switch (execCounter)
@@ -564,11 +565,11 @@ private:
 						case 0x3A:	// MOV A, label
 
 							if (execCount == 0)
-								std::cout << "EXECUTE  MOV A, label ... [START]" << std::endl;
+								std::clog << "EXECUTE  MOV A, label ... [START]" << std::endl;
 
 							if (mov_register_label (&a))
 							{
-								std::cout << "EXECUTE  MOV A, label ... [END]" << std::endl;
+								std::clog << "EXECUTE  MOV A, label ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -577,11 +578,11 @@ private:
 
 						case 0x32:	// MOV label, A
 							if (execCount == 0)
-								std::cout << "EXECUTE  MOV label, A ... [START]" << std::endl;
+								std::clog << "EXECUTE  MOV label, A ... [START]" << std::endl;
 
 							if (mov_label_register (&a))
 							{
-								std::cout << "EXECUTE  MOV label, A ... [END]" << std::endl;
+								std::clog << "EXECUTE  MOV label, A ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -594,12 +595,12 @@ private:
 							{
 								// MOV label,IX
 								if (execCount == 0)
-									std::cout << "EXECUTE  MOV label, IX ... [START]"
+									std::clog << "EXECUTE  MOV label, IX ... [START]"
 											<< std::endl;
 
 								if (mov_label_register (&ix))
 								{
-									std::cout << "EXECUTE  MOV label, IX ... [END]" << std::endl;
+									std::clog << "EXECUTE  MOV label, IX ... [END]" << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									twoByteInstrB1 = 0;
@@ -609,12 +610,12 @@ private:
 							{
 								// MOV label,HL
 								if (execCount == 0)
-									std::cout << "EXECUTE  MOV label, HL ... [START]"
+									std::clog << "EXECUTE  MOV label, HL ... [START]"
 											<< std::endl;
 
 								if (mov_label_register (&hl))
 								{
-									std::cout << "EXECUTE  MOV label, HL ... [END]" << std::endl;
+									std::clog << "EXECUTE  MOV label, HL ... [END]" << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									twoByteInstrB1 = 0;
@@ -628,12 +629,12 @@ private:
 							if (twoByteInstrB1 == 0xDD) // MOV IX,label
 							{
 								if (execCount == 0)
-									std::cout << "EXECUTE  MOV IX, label ... [START]"
+									std::clog << "EXECUTE  MOV IX, label ... [START]"
 											<< std::endl;
 
 								if (mov_register_label (&ix))
 								{
-									std::cout << "EXECUTE  MOV IX, label ... [END]" << std::endl;
+									std::clog << "EXECUTE  MOV IX, label ... [END]" << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									twoByteInstrB1 = 0;
@@ -642,12 +643,12 @@ private:
 							else // MOV HL,label
 							{
 								if (execCount == 0)
-									std::cout << "EXECUTE  MOV HL, label ... [START]"
+									std::clog << "EXECUTE  MOV HL, label ... [START]"
 											<< std::endl;
 
 								if (mov_register_label (&hl))
 								{
-									std::cout << "EXECUTE  MOV HL, label ... [END]" << std::endl;
+									std::clog << "EXECUTE  MOV HL, label ... [END]" << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									twoByteInstrB1 = 0;
@@ -660,11 +661,11 @@ private:
 
 						case 0x7E: // MOV A,[HL]
 							if (execCount == 0)
-								std::cout << "EXECUTE  MOV A, [HL] ... [START]" << std::endl;
+								std::clog << "EXECUTE  MOV A, [HL] ... [START]" << std::endl;
 
 							if (mov_register_sourceAddressRegister (&a, &hl))
 							{
-								std::cout << "EXECUTE  MOV A, [HL] ... [END]" << std::endl;
+								std::clog << "EXECUTE  MOV A, [HL] ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -674,11 +675,11 @@ private:
 						case 0x77: // MOV [HL],A
 
 							if (execCount == 0)
-								std::cout << "EXECUTE  MOV [HL], A ... [START]" << std::endl;
+								std::clog << "EXECUTE  MOV [HL], A ... [START]" << std::endl;
 
 							if (mov_destinationAddressRegister_register (&hl, &a))
 							{
-								std::cout << "EXECUTE  MOV [HL], A ... [END]" << std::endl;
+								std::clog << "EXECUTE  MOV [HL], A ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -690,11 +691,11 @@ private:
 
 						case 0xF5: // PUSH
 							if (execCount == 0)
-								std::cout << "EXECUTE  PUSH ... [START]" << std::endl;
+								std::clog << "EXECUTE  PUSH ... [START]" << std::endl;
 
 							if (push ())
 							{
-								std::cout << "EXECUTE  IN POP ... [END]" << std::endl;
+								std::clog << "EXECUTE  IN POP ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -703,11 +704,11 @@ private:
 
 						case 0xF1: // POP
 							if (execCount == 0)
-								std::cout << "EXECUTE  POP ... [START]" << std::endl;
+								std::clog << "EXECUTE  POP ... [START]" << std::endl;
 
 							if (pop ())
 							{
-								std::cout << "EXECUTE  POP ... [END]" << std::endl;
+								std::clog << "EXECUTE  POP ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -719,11 +720,11 @@ private:
 
 						case 0xDB: // IN A, port
 							if (execCount == 0)
-								std::cout << "EXECUTE  IN A, port ... [START]" << std::endl;
+								std::clog << "EXECUTE  IN A, port ... [START]" << std::endl;
 
 							if (in_a_port ())
 							{
-								std::cout << "EXECUTE  IN A, port ... [END]" << std::endl;
+								std::clog << "EXECUTE  IN A, port ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -732,11 +733,11 @@ private:
 
 						case 0xD3: // OUT port, A
 							if (execCount == 0)
-								std::cout << "EXECUTE  OUT port, A ... [START]" << std::endl;
+								std::clog << "EXECUTE  OUT port, A ... [START]" << std::endl;
 
 							if (out_port_a ())
 							{
-								std::cout << "EXECUTE  OUT port, A ... [END]" << std::endl;
+								std::clog << "EXECUTE  OUT port, A ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -748,11 +749,11 @@ private:
 
 						case 0xCD: // CALL label
 							if (execCount == 0)
-								std::cout << "EXECUTE  CALL label ... [START]" << std::endl;
+								std::clog << "EXECUTE  CALL label ... [START]" << std::endl;
 
 							if (call_label ())
 							{
-								std::cout << "EXECUTE  CALL label ... [END]" << std::endl;
+								std::clog << "EXECUTE  CALL label ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -761,11 +762,11 @@ private:
 
 						case 0xC9: // RET
 							if (execCount == 0)
-								std::cout << "EXECUTE  RET ... [START]" << std::endl;
+								std::clog << "EXECUTE  RET ... [START]" << std::endl;
 
 							if (ret ())
 							{
-								std::cout << "EXECUTE  RET ... [END]" << std::endl;
+								std::clog << "EXECUTE  RET ... [END]" << std::endl;
 								execCount = 0;
 								state = FETCH_INSTR;
 								twoByteInstrB1 = 0;
@@ -780,11 +781,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE INC A ... [START] " << std::endl;
+									std::clog << "EXECUTE INC A ... [START] " << std::endl;
 									// Load A to ALU
 									alu1 = a;
 									execCount++;
-									std::cout << "Load " << a.to_int () << std::endl;
+									std::clog << "Load " << a.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU inc
@@ -808,8 +809,8 @@ private:
 
 									// Store Result
 									a = aluRes;
-									std::cout << "Write back result " << a.to_int () << std::endl;
-									std::cout << "EXECUTE INC A ... [END] " << std::endl;
+									std::clog << "Write back result " << a.to_int () << std::endl;
+									std::clog << "EXECUTE INC A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -823,11 +824,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE INC B ... [START] " << std::endl;
+									std::clog << "EXECUTE INC B ... [START] " << std::endl;
 									// Load B to ALU
 									alu1 = b;
 									execCount++;
-									std::cout << "Load " << b.to_int () << std::endl;
+									std::clog << "Load " << b.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU inc
@@ -851,8 +852,8 @@ private:
 
 									// Store Result
 									b = aluRes;
-									std::cout << "Write back result " << b.to_int () << std::endl;
-									std::cout << "EXECUTE INC B ... [END] " << std::endl;
+									std::clog << "Write back result " << b.to_int () << std::endl;
+									std::clog << "EXECUTE INC B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -866,11 +867,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE INC C ... [START] " << std::endl;
+									std::clog << "EXECUTE INC C ... [START] " << std::endl;
 									// Load C to ALU
 									alu1 = c;
 									execCount++;
-									std::cout << "Load " << c.to_int () << std::endl;
+									std::clog << "Load " << c.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU inc
@@ -894,8 +895,8 @@ private:
 
 									// Store Result
 									c = aluRes;
-									std::cout << "Write back result " << c.to_int () << std::endl;
-									std::cout << "EXECUTE INC C ... [END] " << std::endl;
+									std::clog << "Write back result " << c.to_int () << std::endl;
+									std::clog << "EXECUTE INC C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -908,16 +909,16 @@ private:
 							if (twoByteInstrB1 == 0xDD)
 							{
 								// INC IX
-								std::cout << "EXECUTE INC IX ... [START] " << std::endl;
+								std::clog << "EXECUTE INC IX ... [START] " << std::endl;
 								ix = ix.to_uint () + 1;
-								std::cout << "EXECUTE INC IX ... [END] " << std::endl;
+								std::clog << "EXECUTE INC IX ... [END] " << std::endl;
 							}
 							else
 							{
 								// INC HL
-								std::cout << "EXECUTE INC HL ... [START] " << std::endl;
+								std::clog << "EXECUTE INC HL ... [START] " << std::endl;
 								hl = hl.to_uint () + 1;
-								std::cout << "EXECUTE INC HL ... [END] " << std::endl;
+								std::clog << "EXECUTE INC HL ... [END] " << std::endl;
 							}
 							state = FETCH_INSTR;
 							twoByteInstrB1 = 0;
@@ -928,11 +929,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE DEC A ... [START] " << std::endl;
+									std::clog << "EXECUTE DEC A ... [START] " << std::endl;
 									// Load A to ALU
 									alu1 = a;
 									execCount++;
-									std::cout << "Load " << a.to_int () << std::endl;
+									std::clog << "Load " << a.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU dec
@@ -956,8 +957,8 @@ private:
 
 									// Store Result
 									a = aluRes;
-									std::cout << "Write back result " << a.to_int () << std::endl;
-									std::cout << "EXECUTE DEC A ... [END] " << std::endl;
+									std::clog << "Write back result " << a.to_int () << std::endl;
+									std::clog << "EXECUTE DEC A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -971,11 +972,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE DEC B ... [START] " << std::endl;
+									std::clog << "EXECUTE DEC B ... [START] " << std::endl;
 									// Load B to ALU
 									alu1 = b;
 									execCount++;
-									std::cout << "Load " << b.to_int () << std::endl;
+									std::clog << "Load " << b.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU dec
@@ -999,8 +1000,8 @@ private:
 
 									// Store Result
 									b = aluRes;
-									std::cout << "Write back result " << b.to_int () << std::endl;
-									std::cout << "EXECUTE DEC B ... [END] " << std::endl;
+									std::clog << "Write back result " << b.to_int () << std::endl;
+									std::clog << "EXECUTE DEC B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1014,11 +1015,11 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE DEC C ... [START] " << std::endl;
+									std::clog << "EXECUTE DEC C ... [START] " << std::endl;
 									// Load C to ALU
 									alu1 = c;
 									execCount++;
-									std::cout << "Load " << c.to_int () << std::endl;
+									std::clog << "Load " << c.to_int () << std::endl;
 									break;
 								case 1:
 									// ALU dec
@@ -1042,8 +1043,8 @@ private:
 
 									// Store Result
 									c = aluRes;
-									std::cout << "Write back result " << c.to_int () << std::endl;
-									std::cout << "EXECUTE DEC C ... [END] " << std::endl;
+									std::clog << "Write back result " << c.to_int () << std::endl;
+									std::clog << "EXECUTE DEC C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1056,16 +1057,16 @@ private:
 							if (twoByteInstrB1 == 0xDD)
 							{
 								// DEC IX
-								std::cout << "EXECUTE DEC IX ... [START] " << std::endl;
+								std::clog << "EXECUTE DEC IX ... [START] " << std::endl;
 								ix = ix.to_uint () - 1;
-								std::cout << "EXECUTE DEC IX ... [END] " << std::endl;
+								std::clog << "EXECUTE DEC IX ... [END] " << std::endl;
 							}
 							else
 							{
 								// DEC HL
-								std::cout << "EXECUTE DEC HL ... [START] " << std::endl;
+								std::clog << "EXECUTE DEC HL ... [START] " << std::endl;
 								hl = hl.to_uint () - 1;
-								std::cout << "EXECUTE DEC HL ... [END] " << std::endl;
+								std::clog << "EXECUTE DEC HL ... [END] " << std::endl;
 							}
 							twoByteInstrB1 = 0;
 							state = FETCH_INSTR;
@@ -1077,17 +1078,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ADD A ... [START] " << std::endl;
+									std::clog << "EXECUTE ADD A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1105,7 +1106,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ADD A ... [END] " << std::endl;
+									std::clog << "EXECUTE ADD A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1119,17 +1120,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ADD B ... [START] " << std::endl;
+									std::clog << "EXECUTE ADD B ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1147,7 +1148,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ADD B ... [END] " << std::endl;
+									std::clog << "EXECUTE ADD B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1161,17 +1162,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ADD C ... [START] " << std::endl;
+									std::clog << "EXECUTE ADD C ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load C to alu2
 									alu2 = c;
-									std::cout << "Load C =  " << alu2.to_uint () << " to alu2"
+									std::clog << "Load C =  " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1189,7 +1190,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ADD C ... [END] " << std::endl;
+									std::clog << "EXECUTE ADD C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1203,7 +1204,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ADD dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE ADD dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -1211,7 +1212,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1223,7 +1224,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -1243,7 +1244,7 @@ private:
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ADD dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE ADD dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1257,17 +1258,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE SUB A ... [START] " << std::endl;
+									std::clog << "EXECUTE SUB A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1285,7 +1286,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE SUB A ... [END] " << std::endl;
+									std::clog << "EXECUTE SUB A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1299,17 +1300,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE SUB A ... [START] " << std::endl;
+									std::clog << "EXECUTE SUB A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1327,7 +1328,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE SUB B ... [END] " << std::endl;
+									std::clog << "EXECUTE SUB B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1341,17 +1342,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE SUB C ... [START] " << std::endl;
+									std::clog << "EXECUTE SUB C ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load C to alu2
 									alu2 = c;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1369,7 +1370,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE SUB C ... [END] " << std::endl;
+									std::clog << "EXECUTE SUB C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1383,7 +1384,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE SUB dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE SUB dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -1391,7 +1392,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1403,7 +1404,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -1423,7 +1424,7 @@ private:
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE SUB dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE SUB dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1438,17 +1439,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE AND A ... [START] " << std::endl;
+									std::clog << "EXECUTE AND A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1466,7 +1467,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE AND A ... [END] " << std::endl;
+									std::clog << "EXECUTE AND A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1480,17 +1481,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE AND B ... [START] " << std::endl;
+									std::clog << "EXECUTE AND B ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1508,7 +1509,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE AND B ... [END] " << std::endl;
+									std::clog << "EXECUTE AND B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1522,17 +1523,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE AND C ... [START] " << std::endl;
+									std::clog << "EXECUTE AND C ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = c;
-									std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load C = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1550,7 +1551,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE AND C ... [END] " << std::endl;
+									std::clog << "EXECUTE AND C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1564,7 +1565,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE AND dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE AND dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -1572,7 +1573,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1584,7 +1585,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -1605,7 +1606,7 @@ private:
 									printA ();
 									printFlags ();
 									printFlags ();
-									std::cout << "EXECUTE AND dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE AND dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1619,17 +1620,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE OR A ... [START] " << std::endl;
+									std::clog << "EXECUTE OR A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1647,7 +1648,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE OR A ... [END] " << std::endl;
+									std::clog << "EXECUTE OR A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1661,17 +1662,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE OR A ... [START] " << std::endl;
+									std::clog << "EXECUTE OR A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1689,7 +1690,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE OR B ... [END] " << std::endl;
+									std::clog << "EXECUTE OR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1703,17 +1704,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE OR A ... [START] " << std::endl;
+									std::clog << "EXECUTE OR A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load C to alu2
 									alu2 = c;
-									std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load C = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1731,7 +1732,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE OR B ... [END] " << std::endl;
+									std::clog << "EXECUTE OR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1745,7 +1746,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE OR dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE OR dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -1753,7 +1754,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1765,7 +1766,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -1785,7 +1786,7 @@ private:
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE OR dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE OR dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1799,17 +1800,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE XOR A ... [START] " << std::endl;
+									std::clog << "EXECUTE XOR A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1827,7 +1828,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE XOR A ... [END] " << std::endl;
+									std::clog << "EXECUTE XOR A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1841,17 +1842,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE XOR B ... [START] " << std::endl;
+									std::clog << "EXECUTE XOR B ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1869,7 +1870,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE XOR B ... [END] " << std::endl;
+									std::clog << "EXECUTE XOR B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1883,17 +1884,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE XOR C ... [START] " << std::endl;
+									std::clog << "EXECUTE XOR C ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load C to alu2
 									alu2 = c;
-									std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load C = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1911,7 +1912,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE XOR C ... [END] " << std::endl;
+									std::clog << "EXECUTE XOR C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1925,7 +1926,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE XOR dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE XOR dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -1933,7 +1934,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -1945,7 +1946,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -1965,7 +1966,7 @@ private:
 									pc = pc.to_uint () + 1;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE XOR dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE XOR dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -1981,10 +1982,10 @@ private:
 								switch (execCount)
 								{
 									case 0:
-										std::cout << "EXECUTE SHL ... [START] " << std::endl;
+										std::clog << "EXECUTE SHL ... [START] " << std::endl;
 										// Load A to alu1
 										alu1 = a;
-										std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+										std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 												<< std::endl;
 										execCount++;
 										break;
@@ -2007,7 +2008,7 @@ private:
 										a = aluRes;
 										printA ();
 										printFlags ();
-										std::cout << "EXECUTE SHL ... [END] " << std::endl;
+										std::clog << "EXECUTE SHL ... [END] " << std::endl;
 										execCount = 0;
 										twoByteInstrB1 = 0;
 										state = FETCH_INSTR;
@@ -2023,10 +2024,10 @@ private:
 								switch (execCount)
 								{
 									case 0:
-										std::cout << "EXECUTE SHR ... [START] " << std::endl;
+										std::clog << "EXECUTE SHR ... [START] " << std::endl;
 										// Load A to alu1
 										alu1 = a;
-										std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+										std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 												<< std::endl;
 										execCount++;
 										break;
@@ -2049,7 +2050,7 @@ private:
 										a = aluRes;
 										printA ();
 										printFlags ();
-										std::cout << "EXECUTE SHR ... [END] " << std::endl;
+										std::clog << "EXECUTE SHR ... [END] " << std::endl;
 										execCount = 0;
 										twoByteInstrB1 = 0;
 										state = FETCH_INSTR;
@@ -2063,10 +2064,10 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE RCL ... [START] " << std::endl;
+									std::clog << "EXECUTE RCL ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2086,7 +2087,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE RCL ... [END] " << std::endl;
+									std::clog << "EXECUTE RCL ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
 									state = FETCH_INSTR;
@@ -2099,10 +2100,10 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ROL ... [START] " << std::endl;
+									std::clog << "EXECUTE ROL ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2124,7 +2125,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ROL ... [END] " << std::endl;
+									std::clog << "EXECUTE ROL ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
 									state = FETCH_INSTR;
@@ -2137,10 +2138,10 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE RCR ... [START] " << std::endl;
+									std::clog << "EXECUTE RCR ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2160,7 +2161,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE RCR ... [END] " << std::endl;
+									std::clog << "EXECUTE RCR ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
 									state = FETCH_INSTR;
@@ -2173,10 +2174,10 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE ROR ... [START] " << std::endl;
+									std::clog << "EXECUTE ROR ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2198,7 +2199,7 @@ private:
 									a = aluRes;
 									printA ();
 									printFlags ();
-									std::cout << "EXECUTE ROR ... [END] " << std::endl;
+									std::clog << "EXECUTE ROR ... [END] " << std::endl;
 									execCount = 0;
 									twoByteInstrB1 = 0;
 									state = FETCH_INSTR;
@@ -2212,17 +2213,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE CP A ... [START] " << std::endl;
+									std::clog << "EXECUTE CP A ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load A to alu2
 									alu2 = a;
-									std::cout << "Load A = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load A = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2238,9 +2239,9 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									//a = aluRes;  // Do not save the result
-									//std::cout << "New Value in A: " << a << std::endl;
+									//std::clog << "New Value in A: " << a << std::endl;
 									printFlags ();
-									std::cout << "EXECUTE CP A ... [END] " << std::endl;
+									std::clog << "EXECUTE CP A ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -2254,17 +2255,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE CP B ... [START] " << std::endl;
+									std::clog << "EXECUTE CP B ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load B to alu2
 									alu2 = b;
-									std::cout << "Load B = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load B = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2280,9 +2281,9 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									// a = aluRes;  // Do not save the result
-									// std::cout << "New Value in A: " << a << std::endl;
+									// std::clog << "New Value in A: " << a << std::endl;
 									printFlags ();
-									std::cout << "EXECUTE CP B ... [END] " << std::endl;
+									std::clog << "EXECUTE CP B ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -2296,17 +2297,17 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE CP C ... [START] " << std::endl;
+									std::clog << "EXECUTE CP C ... [START] " << std::endl;
 									// Load A to alu1
 									alu1 = a;
-									std::cout << "Load A = " << alu1.to_uint () << " to alu1"
+									std::clog << "Load A = " << alu1.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
 								case 1:
 									// Load C to alu2
 									alu2 = c;
-									std::cout << "Load C = " << alu2.to_uint () << " to alu2"
+									std::clog << "Load C = " << alu2.to_uint () << " to alu2"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2322,9 +2323,9 @@ private:
 									flag_pv = tempFlags[2];
 									flag_s = tempFlags[3];
 									//a = aluRes;  // Do not save the result
-									//std::cout << "New Value in A: " << a << std::endl;
+									//std::clog << "New Value in A: " << a << std::endl;
 									printFlags ();
-									std::cout << "EXECUTE CP C ... [END] " << std::endl;
+									std::clog << "EXECUTE CP C ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -2338,7 +2339,7 @@ private:
 							switch (execCount)
 							{
 								case 0:
-									std::cout << "EXECUTE CP dat_8 ... [START] " << std::endl;
+									std::clog << "EXECUTE CP dat_8 ... [START] " << std::endl;
 									// Read dat8 from Mem, set address
 									addressBus.write (pc);
 									execCount++;
@@ -2346,7 +2347,7 @@ private:
 								case 1:
 									// Load A to ALU
 									alu1 = a;
-									std::cout << "Load A = " << a.to_uint () << " to alu1"
+									std::clog << "Load A = " << a.to_uint () << " to alu1"
 											<< std::endl;
 									execCount++;
 									break;
@@ -2358,7 +2359,7 @@ private:
 								case 3:
 									// Read dat_8 to ALU
 									alu2 = read_databus_resolved ();
-									std::cout << "Read dat_8 to ALU " << read_databus_resolved ()
+									std::clog << "Read dat_8 to ALU " << read_databus_resolved ()
 											<< std::endl;
 									execCount++;
 									break;
@@ -2376,9 +2377,9 @@ private:
 									//a = aluRes;    // Do not store result
 									resetControlSignals ();
 									pc = pc.to_uint () + 1;
-									//std::cout << "New Value in A: " << a << std::endl;
+									//std::clog << "New Value in A: " << a << std::endl;
 									printFlags ();
-									std::cout << "EXECUTE CP dat_8 ... [END] " << std::endl;
+									std::clog << "EXECUTE CP dat_8 ... [END] " << std::endl;
 									execCount = 0;
 									state = FETCH_INSTR;
 									break;
@@ -2389,157 +2390,157 @@ private:
 
 						case 0xC2:
 							// JPNZ label
-							std::cout << "EXECUTE JPNZ label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPNZ label ... [START] " << std::endl;
 							if (flag_z == false)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPNZ label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPNZ label ... [END] " << std::endl;
 							break;
 
 						case 0xCA:
 							// JPZ label
-							std::cout << "EXECUTE JPZ label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPZ label ... [START] " << std::endl;
 							if (flag_z == true)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPZ label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPZ label ... [END] " << std::endl;
 							break;
 
 						case 0xD2:
 							// JPNC label
-							std::cout << "EXECUTE JPNC label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPNC label ... [START] " << std::endl;
 							if (flag_c == false)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPNC label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPNC label ... [END] " << std::endl;
 							break;
 
 						case 0xDA:
 							// JPC label
-							std::cout << "EXECUTE JPC label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPC label ... [START] " << std::endl;
 							if (flag_c == true)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPC label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPC label ... [END] " << std::endl;
 							break;
 
 						case 0xE2:
 							// JPNO label
-							std::cout << "EXECUTE JPNO label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPNO label ... [START] " << std::endl;
 							if (flag_pv == false)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPNO label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPNO label ... [END] " << std::endl;
 							break;
 
 						case 0xEA:
 							// JPO label
-							std::cout << "EXECUTE JPO label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPO label ... [START] " << std::endl;
 							if (flag_pv == true)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPO label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPO label ... [END] " << std::endl;
 							break;
 
 						case 0xF2:
 							// JPNS label
-							std::cout << "EXECUTE JPNS label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPNS label ... [START] " << std::endl;
 							if (flag_s == false)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPNS label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPNS label ... [END] " << std::endl;
 							break;
 
 						case 0xFA:
 							// JPS label
-							std::cout << "EXECUTE JPS label ... [START] " << std::endl;
+							std::clog << "EXECUTE JPS label ... [START] " << std::endl;
 							if (flag_s == true)
 							{
 								pc = zr;
-								std::cout << "Jump to PC = 0x" << std::hex << std::setw (4)
+								std::clog << "Jump to PC = 0x" << std::hex << std::setw (4)
 										<< pc.to_uint () << std::endl;
 							}
 							else
 							{
-								std::cout << "Don't jump" << std::endl;
+								std::clog << "Don't jump" << std::endl;
 							}
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JPS label ... [END] " << std::endl;
+							std::clog << "EXECUTE JPS label ... [END] " << std::endl;
 							break;
 
 						case 0xC3:
 							// JP label
-							std::cout << "EXECUTE JP label ... [START] " << std::endl;
+							std::clog << "EXECUTE JP label ... [START] " << std::endl;
 							pc = zr;
 							state = FETCH_INSTR;
-							std::cout << "EXECUTE JP label ... [END] " << std::endl;
+							std::clog << "EXECUTE JP label ... [END] " << std::endl;
 							break;
 
 						case 0xE9:
 							if (twoByteInstrB1 == 0xDD)
 							{
 								// JP [IX]
-								std::cout << "EXECUTE JP [IX] ... [START] " << std::endl;
+								std::clog << "EXECUTE JP [IX] ... [START] " << std::endl;
 								pc = ix;
 
-								std::cout << "EXECUTE JP [IX] ... [END] " << std::endl;
+								std::clog << "EXECUTE JP [IX] ... [END] " << std::endl;
 							}
 							state = FETCH_INSTR;
 							twoByteInstrB1 = 0;
@@ -2547,18 +2548,18 @@ private:
 
 						case 0x76:
 							// HALT
-							std::cout << "EXECUTE HALT ... [START] " << std::endl;
+							std::clog << "EXECUTE HALT ... [START] " << std::endl;
 							state = HALT;
-							std::cout << "EXECUTE HALT ... [END] " << std::endl;
+							std::clog << "EXECUTE HALT ... [END] " << std::endl;
 							break;
 
 						default:
-							std::cout << "Instruction not valid" << std::endl;
+							std::clog << "Instruction not valid" << std::endl;
 					}
 
 					break;
 				case HALT:
-					std::cout << "IN HALT STATE ... [START] " << std::endl;
+					std::clog << "IN HALT STATE ... [START] " << std::endl;
 				default:
 					break;
 			}
@@ -2663,13 +2664,13 @@ private:
 	void
 	printA ()
 	{
-		std::cout << "New Value in A: 0x" << std::hex << std::setw (2)
+		std::clog << "New Value in A: 0x" << std::hex << std::setw (2)
 				<< std::setfill ('0') << a << std::endl;
 	}
 	void
 	printFlags ()
 	{
-		std::cout << "FLAGS: c = " << flag_c << " z = " << flag_z << " pv = "
+		std::clog << "FLAGS: c = " << flag_c << " z = " << flag_z << " pv = "
 				<< flag_pv << " s = " << flag_s << std::endl;
 	}
 
@@ -2760,56 +2761,56 @@ private:
 			// Immediate laden
 			case 0x3E:
 				// MOV A, dat_8
-				std::cout << "Instruction -- MOV A, dat_8" << std::endl;
+				std::clog << "Instruction -- MOV A, dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x06:
 				// MOV B, dat_8
-				std::cout << "Instruction -- MOV B, dat_8" << std::endl;
+				std::clog << "Instruction -- MOV B, dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x0E:
 				// MOV C, dat_8
-				std::cout << "Instruction -- MOV C, dat_8" << std::endl;
+				std::clog << "Instruction -- MOV C, dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 				// Direct Addressing
 			case 0x78:
 				// MOV A, B
-				std::cout << "Instruction -- MOV A, B" << std::endl;
+				std::clog << "Instruction -- MOV A, B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x79:
 				// MOV A, C
-				std::cout << "Instruction -- MOV A, C" << std::endl;
+				std::clog << "Instruction -- MOV A, C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x47:
 				// MOV B, A
-				std::cout << "Instruction -- MOV B, A" << std::endl;
+				std::clog << "Instruction -- MOV B, A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x41:
 				// MOV B, C
-				std::cout << "Instruction -- MOV B, C" << std::endl;
+				std::clog << "Instruction -- MOV B, C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x4F:
 				// MOV C, A
-				std::cout << "Instruction -- MOV C, A" << std::endl;
+				std::clog << "Instruction -- MOV C, A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x48:
 				// MOV C, B
-				std::cout << "Instruction -- MOV C, B" << std::endl;
+				std::clog << "Instruction -- MOV C, B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2817,19 +2818,19 @@ private:
 				if (twoByteInstrB1 == 0xDD)
 				{
 					// MOV IX, dat_16
-					std::cout << "Instruction -- MOV IX, dat_16" << std::endl;
+					std::clog << "Instruction -- MOV IX, dat_16" << std::endl;
 				}
 				else
 				{
 					// MOV HL, dat_16
-					std::cout << "Instruction -- MOV HL, dat_16" << std::endl;
+					std::clog << "Instruction -- MOV HL, dat_16" << std::endl;
 					twoByteInstrB1 = 0;
 				}
 				state = EXECUTE;
 				break;
 			case 0x31:
 				// MOV SP, dat_16
-				std::cout << "Instruction -- MOV SP, dat_16" << std::endl;
+				std::clog << "Instruction -- MOV SP, dat_16" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2838,14 +2839,14 @@ private:
 				//--------------------------------------------------------------------------------
 			case 0x3A:
 				// MOV A, label
-				std::cout << "Instruction -- MOV A,label" << std::endl;
+				std::clog << "Instruction -- MOV A,label" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 			case 0x32:
 				// MOV label, A
-				std::cout << "Instruction -- MOV label, A" << std::endl;
+				std::clog << "Instruction -- MOV label, A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2855,14 +2856,14 @@ private:
 				if (twoByteInstrB1 == 0xDD)
 				{
 					//MOV IX,label
-					std::cout << "Instruction -- MOV IX, label" << std::endl;
+					std::clog << "Instruction -- MOV IX, label" << std::endl;
 					state = EXECUTE;
 
 				}
 				else
 				{
 					// MOV HL, label
-					std::cout << "Instruction -- MOV HL, label" << std::endl;
+					std::clog << "Instruction -- MOV HL, label" << std::endl;
 					state = EXECUTE;
 					twoByteInstrB1 = 0;
 				}
@@ -2873,13 +2874,13 @@ private:
 				if (twoByteInstrB1 == 0xDD)
 				{
 					//MOV label,IX
-					std::cout << "Instruction -- MOV label, IX" << std::endl;
+					std::clog << "Instruction -- MOV label, IX" << std::endl;
 					state = EXECUTE;
 				}
 				else
 				{
 					// MOV label, HL
-					std::cout << "Instruction -- MOV label, HL" << std::endl;
+					std::clog << "Instruction -- MOV label, HL" << std::endl;
 					state = EXECUTE;
 					twoByteInstrB1 = 0;
 				}
@@ -2889,13 +2890,13 @@ private:
 				//---------------------------------------------------------------------------------------
 
 			case 0x7E: // MOV A,[HL]
-				std::cout << "Instruction -- MOV A,[HL]" << std::endl;
+				std::clog << "Instruction -- MOV A,[HL]" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 			case 0x77: // MOV [HL],A
-				std::cout << "Instruction -- MOV [HL],A" << std::endl;
+				std::clog << "Instruction -- MOV [HL],A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2904,13 +2905,13 @@ private:
 				//---------------------------------------------------------------------------------------
 
 			case 0xF5: // PUSH
-				std::cout << "Instruction -- PUSH" << std::endl;
+				std::clog << "Instruction -- PUSH" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 			case 0xF1: // POP
-				std::cout << "Instruction -- POP" << std::endl;
+				std::clog << "Instruction -- POP" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2919,13 +2920,13 @@ private:
 				//---------------------------------------------------------------------------------------
 
 			case 0xDB: // IN A,port
-				std::cout << "Instruction -- IN A,port" << std::endl;
+				std::clog << "Instruction -- IN A,port" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 			case 0xD3: // OUT port,A
-				std::cout << "Instruction -- OUT port,A" << std::endl;
+				std::clog << "Instruction -- OUT port,A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2934,13 +2935,13 @@ private:
 				//---------------------------------------------------------------------------------------
 
 			case 0xCD: // CALL label
-				std::cout << "Instruction -- CALL label" << std::endl;
+				std::clog << "Instruction -- CALL label" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 			case 0xC9: // RET
-				std::cout << "Instruction -- RET" << std::endl;
+				std::clog << "Instruction -- RET" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2949,19 +2950,19 @@ private:
 				//------------------------------------------------------------------------
 			case 0x3C:
 				// INC A
-				std::cout << "Instruction -- INC A" << std::endl;
+				std::clog << "Instruction -- INC A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x4:
 				// INC B
-				std::cout << "Instruction -- INC B" << std::endl;
+				std::clog << "Instruction -- INC B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xC:
 				// INC C
-				std::cout << "Instruction -- INC C" << std::endl;
+				std::clog << "Instruction -- INC C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -2969,31 +2970,31 @@ private:
 				if (twoByteInstrB1 == 0xDD)
 				{
 					// INC IX
-					std::cout << "Instruction -- INC IX" << std::endl;
+					std::clog << "Instruction -- INC IX" << std::endl;
 				}
 				else
 				{
 					// INC HL
-					std::cout << "Instruction -- INC HL" << std::endl;
+					std::clog << "Instruction -- INC HL" << std::endl;
 					twoByteInstrB1 = 0;
 				}
 				state = EXECUTE;
 				break;
 			case 0x3D:
 				// DEC A
-				std::cout << "Instruction -- DEC A" << std::endl;
+				std::clog << "Instruction -- DEC A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x5:
 				// DEC B
-				std::cout << "Instruction -- DEC B" << std::endl;
+				std::clog << "Instruction -- DEC B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xD:
 				// DEC C
-				std::cout << "Instruction -- DEC C" << std::endl;
+				std::clog << "Instruction -- DEC C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -3001,12 +3002,12 @@ private:
 				if (twoByteInstrB1 == 0xDD)
 				{
 					// DEC IX
-					std::cout << "Instruction -- DEC IX" << std::endl;
+					std::clog << "Instruction -- DEC IX" << std::endl;
 				}
 				else
 				{
 					// DEC HL
-					std::cout << "Instruction -- DEC HL" << std::endl;
+					std::clog << "Instruction -- DEC HL" << std::endl;
 					twoByteInstrB1 = 0;
 				}
 				state = EXECUTE;
@@ -3014,49 +3015,49 @@ private:
 				// Arithmetic Operations
 			case 0x87:
 				// ADD A
-				std::cout << "Instruction -- ADD A" << std::endl;
+				std::clog << "Instruction -- ADD A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x80:
 				// ADD B
-				std::cout << "Instruction -- ADD B" << std::endl;
+				std::clog << "Instruction -- ADD B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x81:
 				// ADD C
-				std::cout << "Instruction -- ADD C" << std::endl;
+				std::clog << "Instruction -- ADD C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xC6:
 				// ADD dat_8
-				std::cout << "Instruction -- ADD dat_8" << std::endl;
+				std::clog << "Instruction -- ADD dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x97:
 				// SUB A
-				std::cout << "Instruction -- SUB A" << std::endl;
+				std::clog << "Instruction -- SUB A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x90:
 				// SUB B
-				std::cout << "Instruction -- SUB B" << std::endl;
+				std::clog << "Instruction -- SUB B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x91:
 				// SUB C
-				std::cout << "Instruction -- SUB C" << std::endl;
+				std::clog << "Instruction -- SUB C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xD6:
 				// SUB dat_8
-				std::cout << "Instruction -- SUB dat_8" << std::endl;
+				std::clog << "Instruction -- SUB dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -3064,73 +3065,73 @@ private:
 				// Logic Operations
 			case 0xA7:
 				// AND A
-				std::cout << "Instruction -- AND A" << std::endl;
+				std::clog << "Instruction -- AND A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xA0:
 				// AND B
-				std::cout << "Instruction -- AND B" << std::endl;
+				std::clog << "Instruction -- AND B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xA1:
 				// AND C
-				std::cout << "Instruction -- AND C" << std::endl;
+				std::clog << "Instruction -- AND C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xE6:
 				// AND dat_8
-				std::cout << "Instruction -- AND dat_8" << std::endl;
+				std::clog << "Instruction -- AND dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xB7:
 				// OR A
-				std::cout << "Instruction -- OR A" << std::endl;
+				std::clog << "Instruction -- OR A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xB0:
 				// OR B
-				std::cout << "Instruction -- OR B" << std::endl;
+				std::clog << "Instruction -- OR B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xB1:
 				// OR C
-				std::cout << "Instruction -- OR C" << std::endl;
+				std::clog << "Instruction -- OR C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xF6:
 				// OR dat_8
-				std::cout << "Instruction -- OR dat_8" << std::endl;
+				std::clog << "Instruction -- OR dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xAF:
 				// XOR A
-				std::cout << "Instruction -- XOR A" << std::endl;
+				std::clog << "Instruction -- XOR A" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xA8:
 				// XOR B
-				std::cout << "Instruction -- XOR B" << std::endl;
+				std::clog << "Instruction -- XOR B" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xA9:
 				// XOR C
-				std::cout << "Instruction -- XOR C" << std::endl;
+				std::clog << "Instruction -- XOR C" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xEE:
 				// XOR dat_8
-				std::cout << "Instruction -- XOR dat_8" << std::endl;
+				std::clog << "Instruction -- XOR dat_8" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -3139,49 +3140,49 @@ private:
 				if (twoByteInstrB1 == 0xCB)
 				{
 					// Shift Left
-					std::cout << "Instruction -- SHL" << std::endl;
+					std::clog << "Instruction -- SHL" << std::endl;
 					state = EXECUTE;
 				}
 				else
 				{
-					std::cout << "Instruction not valid!" << std::endl;
+					std::clog << "Instruction not valid!" << std::endl;
 				}
 				break;
 			case 0x3F:
 				if (twoByteInstrB1 == 0xCB)
 				{
 					// Shift Right
-					std::cout << "Instruction -- SHR" << std::endl;
+					std::clog << "Instruction -- SHR" << std::endl;
 					state = EXECUTE;
 				}
 				else
 				{
-					std::cout << "Instruction not valid!" << std::endl;
+					std::clog << "Instruction not valid!" << std::endl;
 				}
 				break;
 
 				// ROTATE INSTRUCTIONS
 			case 0x17:
 				// RCL
-				std::cout << "Instruction -- RCL " << std::endl;
+				std::clog << "Instruction -- RCL " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x07:
 				// ROL
-				std::cout << "Instruction -- ROL " << std::endl;
+				std::clog << "Instruction -- ROL " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x1F:
 				// RCR
-				std::cout << "Instruction -- RCR " << std::endl;
+				std::clog << "Instruction -- RCR " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x0F:
 				// ROR
-				std::cout << "Instruction -- ROR " << std::endl;
+				std::clog << "Instruction -- ROR " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -3189,71 +3190,71 @@ private:
 				// COMPARISONS
 			case 0xBF:
 				// CP A
-				std::cout << "Instruction -- CP A " << std::endl;
+				std::clog << "Instruction -- CP A " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xB8:
 				// CP B
-				std::cout << "Instruction -- CP B " << std::endl;
+				std::clog << "Instruction -- CP B " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xB9:
 				// CP C
-				std::cout << "Instruction -- CP C " << std::endl;
+				std::clog << "Instruction -- CP C " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xFE:
 				// CP dat_8
-				std::cout << "Instruction -- CP dat_8 " << std::endl;
+				std::clog << "Instruction -- CP dat_8 " << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 
 				// Bedingter Sprung
 			case 0xC2:
-				std::cout << "Instruction -- JPNZ label" << std::endl;
+				std::clog << "Instruction -- JPNZ label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xCA:
-				std::cout << "Instruction -- JPZ label" << std::endl;
+				std::clog << "Instruction -- JPZ label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xD2:
-				std::cout << "Instruction -- JPNC label" << std::endl;
+				std::clog << "Instruction -- JPNC label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xDA:
-				std::cout << "Instruction -- JPC label" << std::endl;
+				std::clog << "Instruction -- JPC label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xE2:
-				std::cout << "Instruction -- JPNO label" << std::endl;
+				std::clog << "Instruction -- JPNO label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				break;
 			case 0xEA:
-				std::cout << "Instruction -- JPO label" << std::endl;
+				std::clog << "Instruction -- JPO label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xF2:
-				std::cout << "Instruction -- JPNS label" << std::endl;
+				std::clog << "Instruction -- JPNS label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
 			case 0xFA:
-				std::cout << "Instruction -- JPS label" << std::endl;
+				std::clog << "Instruction -- JPS label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				break;
 				//Unbedingter Sprung
 			case 0xC3:
-				std::cout << "Instruction -- JP label" << std::endl;
+				std::clog << "Instruction -- JP label" << std::endl;
 				state = FETCH_TWO_BYTE_ADDRESS;
 				twoByteInstrB1 = 0;
 				break;
@@ -3261,19 +3262,19 @@ private:
 			case 0xE9:
 				if (twoByteInstrB1 == 0xDD)
 				{
-					std::cout << "Instruction -- JP [IX]" << std::endl;
+					std::clog << "Instruction -- JP [IX]" << std::endl;
 					state = EXECUTE;
 				}
 				break;
 
 				// CPU Steuerbefehle
 			case 0x00:
-				std::cout << "Instruction -- NOP" << std::endl;
+				std::clog << "Instruction -- NOP" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
 			case 0x76:
-				std::cout << "Instruction -- HALT" << std::endl;
+				std::clog << "Instruction -- HALT" << std::endl;
 				state = EXECUTE;
 				twoByteInstrB1 = 0;
 				break;
@@ -3281,396 +3282,19 @@ private:
 				// 2 byte Befehle
 			case 0xDD:
 			case 0xCB:
-				std::cout << "2 Byte Instruction" << std::endl;
+				std::clog << "2 Byte Instruction" << std::endl;
 				twoByteInstrB1 = i.to_uint (); // i.to_uint() = 0xDD or i.to_uint() = 0xCB
 				state = FETCH_INSTR;
 				break;
 
 			default:
-				std::cout << "Instruction not valid" << std::endl;
+				std::clog << "Instruction not valid" << std::endl;
 		}
 	}
 
 	//------------------------------------------------
 	//------M E M O R Y  I N S T R U C T I O N S------
 	//------------------------------------------------
-
-	/*
-	 bool load_register_from_pcaddress(sc_bv<8> *reg_destination)
-	 {
-	 static int execCount_internal = 0;
-	 bool ready = false;
-
-	 switch (execCount_internal) {
-
-	 case 0:
-	 // Write address register to address bus
-	 cout << "WRITE PC = " << pc << " to AddressBus" << endl;
-	 addressBus.write(pc);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 1:
-	 //Set control sigs for mem read
-	 wr.write(true);
-	 rd.write(false);
-	 mreq.write(false);
-	 iorq.write(true);
-	 cout << "Set control sigs for mem read  wr,rd,m,io : " << wr << " "<< rd << " "<< mreq <<" "<< iorq << endl;
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 2:
-
-	 // test register len
-	 cout << "Write data form databus to register" << endl;
-	 *reg_destination = read_databus_resolved();
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 3:
-	 // Reset control signals and pc++
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 cout << "Reset control sigs for mem read  wr,rd,m,io : " << wr << " "<< rd << " "<< mreq <<" "<< iorq << endl;
-	 pc = pc.to_uint() + 1;
-	 execCount_internal = 0;
-	 execCount++;
-	 ready = true;
-	 break;
-
-	 }
-
-	 return ready;
-	 }
-
-	 bool load_register_from_pcaddress(sc_bv<16> *reg_destination)
-	 {
-	 static int execCount_internal = 0;
-	 bool ready = false;
-
-	 switch (execCount_internal) {
-	 case 0:  // Write PC to address bus
-	 cout << "WRITE low byte address PC = " << pc.to_uint() << " to AddressBus" << endl;
-	 addressBus.write(pc);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 1:
-	 // Set control sigs for mem read
-	 wr.write(true);
-	 rd.write(false);
-	 mreq.write(false);
-	 iorq.write(true);
-	 cout << "Set control sigs for mem read  wr,rd,m,io : " << wr << " "<< rd << " "<< mreq <<" "<< iorq << endl;
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 2:
-	 // Write low byte to SP
-	 cout << "Write low byte of data form databus to register" << endl;
-	 *reg_destination = (*reg_destination & 0xff00) | (0x00FF & read_databus_resolved());
-	 std::cout << "Got low byte " << read_databus_resolved() << std::endl;
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 3:
-	 // Reset control signals and pc++
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 cout << "Set control sigs for mem read  wr,rd,m,io : " << wr << " "<< rd << " "<< mreq <<" "<< iorq << endl;
-	 pc = pc.to_uint() + 1;
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 4:
-	 // Write PC to address bus
-	 cout << "WRITE low byte address PC = " << pc.to_uint() << " to AddressBus" << endl;
-	 addressBus.write(pc);
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 5:  // Set signals for read
-	 wr.write(true);
-	 rd.write(false);
-	 mreq.write(false);
-	 iorq.write(true);
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 6:  // Write hi byte to SP
-	 *reg_destination = (read_databus_resolved() << 8) | (*reg_destination & 0x00FF);
-	 std::cout << "Got hi byte " << read_databus_resolved() << std::endl;
-	 execCount_internal ++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 case 7:
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 pc = pc.to_uint() + 1;
-	 execCount++;
-	 ready = true;
-	 break;
-
-	 } // switch (execCounter)
-
-	 return ready;
-
-	 }
-
-
-
-	 bool read_from_memaddress_to_register(sc_bv<16> *reg_source_addr , sc_bv<16> *reg_destination )
-	 {
-	 static int execCount_internal = 0;
-	 bool ready = false;
-
-	 switch (execCount_internal) {
-
-	 case 0:
-	 // Write address register to address bus
-	 addressBus.write(reg_source_addr->to_uint());
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 1:
-	 //Set control sigs for mem read
-
-	 cout << "Register   : " << reg_source_addr->to_uint() << endl;
-	 cout << "AddressBus : " << addressBus.read().to_uint() << endl;
-
-	 wr.write(true);
-	 rd.write(false);
-	 mreq.write(false);
-	 iorq.write(true);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 2:
-
-	 // test register len
-	 *reg_destination = read_databus_resolved();
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 3:
-
-	 // Reset control signals and
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 *reg_source_addr = reg_source_addr->to_uint() + 1;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 4:
-
-	 // Write address register to address bus
-	 addressBus.write(reg_source_addr->to_uint());
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 5:
-	 cout << "Register   : " << reg_source_addr->to_uint() << endl;
-	 cout << "AddressBus : " << addressBus.read().to_uint() << endl;
-
-	 wr.write(true);
-	 rd.write(false);
-	 mreq.write(false);
-	 iorq.write(true);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 break;
-
-	 case 6:
-
-	 // write high byte
-	 *reg_destination = read_databus_resolved();
-	 execCount_internal++;
-	 execCount++;
-	 ready = true;
-	 break;
-	 execCount_internal = 0;
-	 break;
-
-
-	 }
-
-	 return ready;
-
-	 }
-
-	 bool write_from_register_to_memaddress(sc_bv<8> *reg_source, sc_bv<16> *reg_destination_addr )
-	 {
-	 static int execCount_internal = 0;
-	 bool ready = false;
-
-	 switch (execCount_internal) {
-
-	 case 0:
-	 // Write address register to address bus
-	 addressBus.write(*reg_destination_addr);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 1:
-	 //Set control sigs for mem read
-	 wr.write(false);
-	 rd.write(true);
-	 mreq.write(false);
-	 iorq.write(true);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 2:
-
-	 // test register len
-	 dataBus.write(*reg_source);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 3:
-	 // Reset control signals and
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 execCount_internal = 0;
-	 execCount++;
-	 ready = true;
-	 break;
-
-	 }
-
-	 return ready;
-
-	 }
-
-	 bool write_from_register_to_address(sc_bv<16> *reg_source, sc_bv<16> *reg_destination_addr )
-	 {
-	 static int execCount_internal = 0;
-	 bool ready = false;
-
-	 switch (execCount_internal) {
-
-	 case 0:
-	 // Write address register to address bus
-	 addressBus.write(*reg_destination_addr);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 1:
-	 //Set control sigs for mem read
-	 wr.write(false);
-	 rd.write(true);
-	 mreq.write(false);
-	 iorq.write(true);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 2:
-
-	 // write low byte of source register to databus
-	 sc_bv<8> data = *reg_source;
-
-
-	 dataBus.write(data);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 3:
-	 // Reset control signals and
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 *reg_destination_addr = reg_destination_addr->to_uint() + 1;
-	 execCount++;
-	 ready = false;
-	 break;
-
-	 case 4:
-	 // Write address register to address bus
-	 addressBus.write(*reg_destination_addr);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 break;
-
-	 case 5:
-	 // write high byte of source register to databus
-	 sc_bv<8> data = *reg_source >> 8;
-
-
-	 dataBus.write(data);
-	 execCount_internal++;
-	 execCount++;
-	 ready = false;
-	 break;
-	 break;
-
-	 case 6:
-	 // Reset control signals and
-	 wr.write(true);
-	 rd.write(true);
-	 mreq.write(true);
-	 iorq.write(true);
-	 execCount_internal = 0;
-	 execCount++;
-	 ready = true;
-	 break;
-	 break;
-
-
-	 }
-
-	 return ready;
-	 }
-	 */
 
 	bool
 	mov_register_sourceAddressRegister (sc_bv<8> *reg_destination,
@@ -3750,7 +3374,7 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3762,9 +3386,9 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data to ZR register" << endl;
+				std::clog << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
@@ -3774,7 +3398,7 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE address PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE address PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3785,7 +3409,7 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
@@ -3854,7 +3478,7 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3866,9 +3490,9 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte of data to ZR register" << endl;
+				std::clog << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< std::endl;
 				execCount++;
@@ -3879,7 +3503,7 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3890,7 +3514,7 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< std::endl;
 				execCount++;
@@ -3907,11 +3531,11 @@ private:
 				execCount++;
 				break;
 			case 9: //write data to Memory
-				{
-					sc_lv<8> data = reg_source->to_uint();
-					dataBus.write (data);
-					execCount++;
-				}
+			{
+				sc_lv<8> data = reg_source->to_uint ();
+				dataBus.write (data);
+				execCount++;
+			}
 				break;
 			case 10: // Set control signals for write
 				setProcSignals_mem_write ();
@@ -3931,13 +3555,12 @@ private:
 	mov_register_label (sc_bv<8> *reg_destination)
 	{
 		bool ready = false;
-		//std::cout << "Hello from MOV A, label!" << std::endl;
 		switch (execCount)
 		{
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3949,9 +3572,9 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				cout << "Write low byte from databus to ZR" << endl;
+				std::clog << "Write low byte from databus to ZR" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " of ZR" << std::endl;
 				execCount++;
@@ -3962,7 +3585,7 @@ private:
 				execCount++;
 				break;
 			case 4:	// Write PC to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -3973,7 +3596,7 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " of ZR" << std::endl;
 				execCount++;
@@ -3996,7 +3619,7 @@ private:
 				break;
 			case 10: //get data from Memory at address ZR and load it
 				*reg_destination = read_databus_resolved ();
-				std::cout << "Got byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " from address in ZR" << std::endl;
 				execCount++;
@@ -4020,7 +3643,7 @@ private:
 			//-------------------------------------------------------------------------
 			case 0:
 				// Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4034,9 +3657,9 @@ private:
 
 			case 2:
 				// Write low byte to ZR
-				cout << "Write low byte of data to ZR register" << endl;
+				std::clog << "Write low byte of data to ZR register" << endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " of ZR" << std::endl;
 				execCount++;
@@ -4049,7 +3672,7 @@ private:
 				break;
 			case 4:
 				// Write PC to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4060,7 +3683,7 @@ private:
 				break;
 			case 6:  // Write hi byte to zr
 				zr = (read_databus_resolved () << 8) | (zr & 0x00FF);
-				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " of ZR" << std::endl;
 				execCount++;
@@ -4084,7 +3707,7 @@ private:
 			case 10: //get data from Memory
 				*reg_destination = (*reg_destination & 0xff00)
 						| (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " from ZR address" << std::endl;
 				execCount++;
@@ -4108,7 +3731,7 @@ private:
 			case 14: // Write high byte to destination register
 				*reg_destination = (read_databus_resolved () << 8)
 						| (*reg_destination & 0x00FF);
-				std::cout << "Got hi byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got hi byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved ().to_uint ()
 						<< " from ZR address" << std::endl;
 				execCount++;
@@ -4133,7 +3756,7 @@ private:
 			//-------------------------------------------------------------------------
 			case 0:
 				// Write address register to address bus
-				cout << "WRITE low byte address 0x" << std::hex << std::setw (2)
+				std::clog << "WRITE low byte address 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4147,7 +3770,7 @@ private:
 
 			case 2:
 				// Write low byte to ZR
-				cout << "Write low byte of data to ZR register" << endl;
+				std::clog << "Write low byte of data to ZR register" << endl;
 				zr (7, 0) = dataBus.read ();
 				execCount++;
 				break;
@@ -4159,7 +3782,7 @@ private:
 				break;
 			case 4:
 				// Write PC to address bus
-				cout << "WRITE high byte address 0x" << std::hex << std::setw (2)
+				std::clog << "WRITE high byte address 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << pc.to_uint () << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4169,7 +3792,7 @@ private:
 				execCount++;
 				break;
 			case 6:  // Write hi byte to zr
-				cout << "WRITE high byte of databus to ZR register" << endl;
+				std::clog << "WRITE high byte of databus to ZR register" << endl;
 				zr (15, 8) = dataBus.read ();
 				execCount++;
 				break;
@@ -4187,13 +3810,13 @@ private:
 				break;
 
 			case 9:	// Write Stack Pointer register to address bus
-				cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+				std::clog << "WRITE SP = " << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
 				break;
 
 			case 10:	// Write high byte to stack
-				cout << "Write high Byte of PC to databus " << endl;
+				std::clog << "Write high Byte of PC to databus " << endl;
 				dataBus.write (sc_lv<8> (pc.range (15, 8)));
 				execCount++;
 				break;
@@ -4203,7 +3826,6 @@ private:
 				execCount++;
 				break;
 
-
 			case 12:	// Reset control signals and and decrement sp
 				resetProcSignals ();
 				sp = sp.to_uint () - 1;
@@ -4212,18 +3834,16 @@ private:
 
 			case 13: // Write low byte of pc to stack
 			{
-				cout << "Write low byte of pc to stack " << endl;
+				std::clog << "Write low byte of pc to stack " << endl;
 				dataBus.write (sc_lv<8> (pc.range (7, 0)));
 				execCount++;
 			}
-			break;
-
+				break;
 
 			case 14: // Set control sigs for mem write
 				setProcSignals_mem_write ();
 				execCount++;
 				break;
-
 
 			case 15:	// Reset control signals and and copy zr to pc
 				pc = zr;
@@ -4244,7 +3864,7 @@ private:
 		{
 			//-------------------------------------------------------------------------
 			case 0:	// Write stack pointer register to address bus
-				cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+				std::clog << "WRITE SP = " << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
 				break;
@@ -4299,7 +3919,7 @@ private:
 
 			//-------------------------------------------------------------------------
 			case 0:	// Write Stack Pointer register to address bus
-				cout << "WRITE SP = " << sp << " to AddressBus" << endl;
+				std::clog << "WRITE SP = " << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
 				break;
@@ -4368,15 +3988,14 @@ private:
 				break;
 
 			case 1:	// Write Stack Pointer register to address bus
-				cout << "WRITE SP = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE SP = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << sp << " to AddressBus" << endl;
 				addressBus.write (sp);
 				execCount++;
 				break;
 
-
 			case 2:	// Write Accu to mem
-				cout << "Write Accu to databus " << endl;
+				std::clog << "Write Accu to databus " << endl;
 				dataBus.write (a);
 				execCount++;
 				break;
@@ -4399,7 +4018,7 @@ private:
 
 			case 6: // Write status Register to mem
 			{
-				cout << "Write Status regs to databus " << endl;
+				std::clog << "Write Status regs to databus " << endl;
 				sc_lv<8> output_data;
 				output_data[0] = flag_s;
 				output_data[1] = flag_pv;
@@ -4437,7 +4056,7 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:  // Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4449,10 +4068,10 @@ private:
 				break;
 
 			case 2:  // Write low byte to ZR
-				std::cout << "Write low byte of data from databus to ZR register"
+				std::clog << "Write low byte of data from databus to ZR register"
 						<< std::endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
@@ -4496,7 +4115,7 @@ private:
 			// load register ZR
 			//-------------------------------------------------------------------------
 			case 0:	// Write address register to address bus
-				cout << "WRITE PC = 0x" << std::hex << std::setw (4)
+				std::clog << "WRITE PC = 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << pc << " to AddressBus" << endl;
 				addressBus.write (pc);
 				execCount++;
@@ -4508,10 +4127,10 @@ private:
 				break;
 
 			case 2:	// Write low byte to ZR
-				std::cout << "Write low byte of data from databus to ZR register"
+				std::clog << "Write low byte of data from databus to ZR register"
 						<< std::endl;
 				zr = (zr & 0xff00) | (0x00FF & read_databus_resolved ());
-				std::cout << "Got low byte 0x" << std::hex << std::setw (2)
+				std::clog << "Got low byte 0x" << std::hex << std::setw (2)
 						<< std::setfill ('0') << read_databus_resolved () << std::endl;
 				execCount++;
 				break;
@@ -4552,7 +4171,8 @@ private:
 
 		if (input_data_lv == "zzzzzzzz" || input_data_lv == "xxxxxxxx")
 		{
-			cout << "Module Mc8: Error reading dataBus : undefined value" << endl;
+			std::clog << "Module Mc8: Error reading dataBus : undefined value"
+					<< endl;
 			input_data_bv = "00000000";
 			exit (-1);
 		}

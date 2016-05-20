@@ -20,19 +20,13 @@ public:
 
 	sc_inout_rv<8> connect;
 
-	/*	SC_CTOR(asyncIO)
-	 {
-	 SC_THREAD(readData);
-	 SC_THREAD(writeData);
-
-
-	 }*/
 
 	asyncIO (sc_module_name nm, sc_uint<8> address_, bool io_) :
 			sc_module (nm), port_address (address_), io (io_)
 	{
 		// configure if input or output
 		// true: input, false: output
+
 
 		sc_trace (fp, rd, "RD_IO");
 		if (io)
@@ -61,7 +55,7 @@ private:
 			wait ();  // for rd event
 			if (rd.read () == false)  // neg edge
 			{
-				std::cout << "READ DATA FROM IO" << std::endl;
+				std::clog << "READ DATA FROM IO" << std::endl;
 				sc_bv<8> io_addr = addrBus.read ().range (7, 0);
 
 				if (io_addr == port_address)
@@ -70,7 +64,8 @@ private:
 			else   // pos edge
 			{
 				sc_bv<8> io_addr = addrBus.read ().range (7, 0);
-				std::cout << "IO: Write zzzzzzzz to data Bus @" << sc_time_stamp ()
+
+				std::clog << "IO: Write zzzzzzzz to data Bus @" << sc_time_stamp ()
 						<< std::endl;
 				dataBus.write ("zzzzzzzz");
 			}
@@ -84,32 +79,22 @@ private:
 		while (1)
 		{
 			wait (wr.negedge_event ());
-			std::cout << "WRITE DATA TO IO @ " << sc_time_stamp () << std::endl;
+			std::clog << "WRITE DATA TO IO @ " << sc_time_stamp () << std::endl;
 			sc_bv<8> io_addr = addrBus.read ().range (7, 0);
+#ifdef DEBUG
 			std::cout << "IO_mod: io addr: 0x" << io_addr.to_uint ()
 					<< ", port address 0x" << port_address.to_uint () << std::endl;
-
+#endif
 			if (io_addr == port_address)
 			{
+#ifdef DEBUG
 				std::cout << "IO_mod: Write 0x" << std::hex << std::setw (2)
 						<< dataBus.read () << "to output" << std::endl;
+#endif
 				connect.write (dataBus.read ());
 			}
 		}
 	}
-/*
-	void
-	weak ()
-	{
-		// if there is no reading of the io set the data Output to all z
-		while (1)
-		{
-			wait (rd.posedge_event ());
-			std::cout << "Write zzzzzzzz to data Bus!" << std::endl;
-			dataBus.write ("zzzzzzzz");
-		}
-
-	}*/
 };
 
 #endif

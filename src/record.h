@@ -61,19 +61,19 @@ private:
 	{
 		if (line[0] != ':')
 		{
-#ifdef TEST
+#ifdef DEBUG
 			cout << "Line not starting with ':'." << endl;
 #endif
 			return -1;
 		}
-#ifdef TEST
+#ifdef DEBUG
 		cout << "Found record : ..." << endl;
 #endif
 
 		// get Byte_count
 		{
 			Byte_count = strtoul (line.substr (DATA_LEN_START, 2).c_str (), NULL, 16);
-#ifdef TEST
+#ifdef DEBUG
 			cout << "Byte_count : " << Byte_count << " File : " << line.substr(DATA_LEN_START,2) << endl;
 #endif
 		}
@@ -81,7 +81,7 @@ private:
 		// get Address
 		{
 			Address = strtoul (line.substr (ADDRESS_START, 4).c_str (), NULL, 16);
-#ifdef TEST
+#ifdef DEBUG
 			cout << "Address : " << Address << " File : " << line.substr(ADDRESS_START,4) << endl;
 #endif
 		}
@@ -90,14 +90,16 @@ private:
 		{
 			int rec_type = strtoul (line.substr (RECORD_TYPE_START, 2).c_str (), NULL,
 															16);
-#ifdef TEST
+#ifdef DEBUG
 			cout << "Record Type : " << rec_type << " File : " << line.substr(RECORD_TYPE_START,2) << endl;
 #endif
 
 			if (rec_type < 0 || rec_type > 5)
 			{
+#ifdef DEBUG
 				cout << "Error: Unsupported dataset type  : " << line.substr (3, 4)
 						<< endl;
+#endif
 				return -1;
 			}
 
@@ -113,7 +115,7 @@ private:
 				{
 					data[i] = strtoul (line.substr ((DATA_START + i * 2), 2).c_str (),
 															NULL, 16);
-#ifdef TEST
+#ifdef DEBUG
 					cout << "Data Byte "<< i << " Data : " << (int)data[i] << endl;
 #endif
 				}

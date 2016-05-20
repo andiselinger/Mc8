@@ -30,6 +30,10 @@ sc_main (int argc, char* argv[])
 		return -1;
 	}
 
+	// Use this to suppress log output
+	std::ofstream error ("dev/null");
+	std::clog.rdbuf (error.rdbuf ());
+
 	string filename = argv[1];
 
 	hex_file *hf = new hex_file (filename);

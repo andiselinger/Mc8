@@ -3,7 +3,6 @@
 
 extern sc_trace_file *fp;  // Trace file from main.cpp
 
-
 SC_MODULE(asyncRom)
 {
 
@@ -28,7 +27,7 @@ public:
 		for (int i = 0; i < ROM_SIZE; i++)
 		{
 			if (data[i])
-				cout << "Initialize ROM Address 0x" << std::hex << std::setw (4)
+				std::clog << "Initialize ROM Address 0x" << std::hex << std::setw (4)
 						<< std::setfill ('0') << i << " with 0x" << std::setw (2)
 						<< (int) data[i] << endl;
 			memory[i] = data[i];
@@ -51,15 +50,15 @@ private:
 			{
 				addressToRead = addrBus.read ().to_uint ();
 				wait (ROM_READ_DELAY_US, SC_NS);
-#ifdef TEST
+#ifdef DEBUG
 				cout << "ROM here, reading Data: " << memory[addressToRead]
-						<< " from Address :" << addressToRead << endl;
+				<< " from Address :" << addressToRead << endl;
 #endif
 				dataBus.write (memory[addressToRead]);
 			}
 			else  // pos edge
 			{
-#ifdef TEST
+#ifdef DEBUG
 				std::cout << "ROM: RD pos edge @" << sc_time_stamp () << std::endl;
 #endif
 				dataBus.write ("zzzzzzzz");

@@ -21,6 +21,6 @@
 
 #define ROM_READ_DELAY_US 5
 
-#define TEST
+//#define DEGUG
 
 #endif /* GLOBAL_DEFINITIONS_H_ */
